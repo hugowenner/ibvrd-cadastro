@@ -1,0 +1,18 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'azul-ibvrd': '#0a2c4d',
+        'cinza-claro': '#f4f6f8',
+      },
+      fontFamily: {
+        'sans': ['Arial', 'Helvetica', 'sans-serif'],
+      }
+    },
+  },
+  plugins: [],
+}
