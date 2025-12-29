@@ -18,15 +18,15 @@ class ErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex items-center justify-center h-screen">
-                    <Card className="max-w-md">
-                        <h2 className="text-xl font-bold text-red-600 mb-4">Ocorreu um erro inesperado</h2>
-                        <p className="text-gray-700 mb-4">
+                <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+                    <Card className="max-w-md w-full border-t-4 border-t-amber-600">
+                        <h2 className="text-2xl font-serif text-gray-900 mb-4">Ocorreu um erro inesperado</h2>
+                        <p className="text-gray-600 mb-6 leading-relaxed">
                             Desculpe, algo deu errado. Por favor, tente recarregar a página.
                         </p>
                         <button 
                             onClick={() => window.location.reload()}
-                            className="bg-azul-ibvrd text-white px-4 py-2 rounded hover:bg-blue-700"
+                            className="w-full bg-amber-600 text-white font-semibold uppercase tracking-widest text-sm py-3 px-4 rounded hover:bg-amber-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                         >
                             Recarregar Página
                         </button>

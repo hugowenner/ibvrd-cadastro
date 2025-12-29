@@ -31,7 +31,7 @@ const Pessoas = () => {
             key: 'telefone', 
             label: 'Telefone',
             sortable: false
-        },
+        }, 
         { 
             key: 'dataCadastro', 
             label: 'Data de Cadastro',
@@ -43,18 +43,16 @@ const Pessoas = () => {
             label: 'Ações',
             sortable: false,
             render: (_, row) => (
-                <div className="flex space-x-2">
+                <div className="flex space-x-4">
                     <button
                         onClick={() => navigate(`/editar/${row.id}`)}
-                        className="text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline"
-                        aria-label={`Editar ${row.nomeCompleto}`}
+                        className="text-amber-700 font-medium hover:text-amber-900 transition-colors duration-200 uppercase text-xs tracking-wider hover:underline"
                     >
                         Editar
                     </button>
                     <button
                         onClick={() => handleDelete(row.id, row.nomeCompleto)}
-                        className="text-red-600 hover:text-red-800 transition-colors duration-200 hover:underline"
-                        aria-label={`Excluir ${row.nomeCompleto}`}
+                        className="text-red-600 font-medium hover:text-red-800 transition-colors duration-200 uppercase text-xs tracking-wider hover:underline"
                     >
                         Excluir
                     </button>
@@ -67,7 +65,6 @@ const Pessoas = () => {
         if (window.confirm(`Tem certeza que deseja excluir ${nome}?`)) {
             try {
                 await deletePessoa(id);
-                // Opcional: mostrar mensagem de sucesso
             } catch (error) {
                 alert('Erro ao excluir pessoa: ' + error.message);
             }
@@ -82,7 +79,6 @@ const Pessoas = () => {
         setSortConfig({ key, direction });
     };
 
-    // useMemo para filtrar e ordenar pessoas
     const filteredPessoas = useMemo(() => {
         let filtered = pessoas.filter(pessoa => {
             const matchesSearch = pessoa.nomeCompleto.toLowerCase().includes(searchTerm.toLowerCase());
@@ -90,7 +86,6 @@ const Pessoas = () => {
             return matchesSearch && matchesFilter;
         });
 
-        // Aplicar ordenação
         if (sortConfig.key) {
             filtered.sort((a, b) => {
                 const aValue = a[sortConfig.key];
@@ -112,45 +107,55 @@ const Pessoas = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-azul-ibvrd"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <Card>
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded animate-pulse">
-                    <strong>Erro:</strong> Não foi possível carregar a lista de pessoas. Tente novamente mais tarde.
+            <Card className="border-l-4 border-l-red-500">
+                <div className="text-red-700">
+                    <strong className="font-bold block">Erro:</strong> 
+                    Não foi possível carregar a lista de pessoas.
                 </div>
             </Card>
         );
     }
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Pessoas Cadastradas</h2>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <input
-                    type="text"
-                    placeholder="Buscar por nome..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd transition-all duration-200 focus:ring-2"
-                    aria-label="Buscar por nome"
-                />
-                <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd transition-all duration-200 focus:ring-2"
-                    aria-label="Filtrar por tipo"
-                >
-                    <option value="Todos">Todos</option>
-                    <option value="Visitante">Visitante</option>
-                    <option value="Membro">Membro</option>
-                    <option value="Líder">Líder</option>
-                </select>
+        <div className="animate-fade-in">
+            <div className="mb-10 pb-4 border-b border-gray-200 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-serif text-gray-900 font-normal">Pessoas Cadastradas</h2>
+                    <p className="text-gray-500 mt-2 font-light">Gerencie os membros e visitantes da comunidade.</p>
+                </div>
             </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-8 flex flex-col sm:flex-row gap-4 items-center">
+                <div className="relative w-full sm:w-1/2">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nome..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition-colors duration-200"
+                    />
+                </div>
+                <div className="w-full sm:w-auto">
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition-colors duration-200 bg-white"
+                    >
+                        <option value="Todos">Todos os Tipos</option>
+                        <option value="Visitante">Visitante</option>
+                        <option value="Membro">Membro</option>
+                        <option value="Líder">Líder</option>
+                    </select>
+                </div>
+            </div>
+
             <Table 
                 data={filteredPessoas} 
                 columns={columns} 

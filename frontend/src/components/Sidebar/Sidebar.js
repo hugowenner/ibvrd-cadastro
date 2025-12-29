@@ -3,34 +3,45 @@ import { NavLink } from 'react-router-dom';
 import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus } from 'react-icons/fa';
 
 const Sidebar = () => {
+    // Estilo para links inativos e ativos
+    const baseClasses = "flex items-center py-4 px-6 border-l-4 transition-all duration-300 group";
+    const activeClasses = "border-amber-600 bg-amber-50 text-amber-800 font-medium";
+    const inactiveClasses = "border-transparent text-gray-600 hover:bg-gray-50 hover:text-amber-700 hover:border-gray-200";
+
     const linkClasses = ({ isActive }) =>
-        `flex items-center py-2.5 px-4 rounded transition-all duration-200 ease-in-out hover:bg-blue-700 hover:translate-x-1 ${
-            isActive ? 'bg-blue-700' : ''
-        }`;
+        `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
 
     return (
-        <aside className="w-64 bg-azul-ibvrd text-white flex-shrink-0 transition-all duration-300">
-            <div className="p-4 text-xl font-semibold">
-                IBVRD
+        <aside className="w-full md:w-72 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col transition-all duration-300 h-screen sticky top-0">
+            <div className="p-8 border-b border-gray-100">
+                <h1 className="text-3xl font-serif text-gray-900 font-bold tracking-tight">IBVRD</h1>
+                <div className="w-8 h-1 bg-amber-600 mt-2"></div>
             </div>
-            <nav className="mt-4">
+            
+            <nav className="flex-1 mt-6 space-y-1">
                 <NavLink to="/dashboard" className={linkClasses}>
-                    <FaHome className="mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    Dashboard
+                    <FaHome className="text-lg transition-transform duration-300 group-hover:scale-110 text-amber-600" />
+                    <span className="ml-4 font-serif">Dashboard</span>
                 </NavLink>
                 <NavLink to="/pessoas" className={linkClasses}>
-                    <FaUsers className="mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    Pessoas Cadastradas
+                    <FaUsers className="text-lg transition-transform duration-300 group-hover:scale-110 text-amber-600" />
+                    <span className="ml-4 font-serif">Pessoas Cadastradas</span>
                 </NavLink>
                 <NavLink to="/aniversariantes" className={linkClasses}>
-                    <FaBirthdayCake className="mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    Aniversariantes do Mês
+                    <FaBirthdayCake className="text-lg transition-transform duration-300 group-hover:scale-110 text-amber-600" />
+                    <span className="ml-4 font-serif">Aniversariantes</span>
                 </NavLink>
                 <NavLink to="/cadastro" className={linkClasses}>
-                    <FaUserPlus className="mr-3 transition-transform duration-200 group-hover:scale-110" />
-                    Novo Cadastro
+                    <FaUserPlus className="text-lg transition-transform duration-300 group-hover:scale-110 text-amber-600" />
+                    <span className="ml-4 font-serif">Novo Cadastro</span>
                 </NavLink>
             </nav>
+
+            <div className="p-6 border-t border-gray-100">
+                <div className="text-xs text-gray-400 text-center font-serif tracking-widest uppercase">
+                    Sistema Administrativo
+                </div>
+            </div>
         </aside>
     );
 };

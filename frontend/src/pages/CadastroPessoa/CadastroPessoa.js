@@ -11,24 +11,27 @@ const CadastroPessoa = () => {
 
     const handleSuccess = () => {
         setSubmitSuccess(true);
-        // Redireciona após um breve período para mostrar a mensagem de sucesso
         setTimeout(() => {
             navigate('/pessoas');
         }, 2000);
     };
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Novo Cadastro</h2>
+        <div className="max-w-4xl mx-auto animate-fade-in">
+            <div className="mb-10 pb-4 border-b border-gray-200">
+                <h2 className="text-3xl md:text-4xl font-serif text-gray-900 font-normal">Novo Cadastro</h2>
+                <p className="text-gray-500 mt-2 font-light">Preencha os dados abaixo para adicionar uma nova pessoa ao sistema.</p>
+            </div>
             
             {submitSuccess ? (
-                <Card>
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded animate-pulse">
-                        <strong>Sucesso!</strong> Pessoa cadastrada com sucesso! Redirecionando...
+                <Card className="border-t-4 border-t-green-500 bg-green-50">
+                    <div className="text-green-800">
+                        <strong className="font-bold block text-lg mb-1">Sucesso!</strong> 
+                        Pessoa cadastrada com sucesso! Redirecionando...
                     </div>
                 </Card>
             ) : (
-                <Card>
+                <Card className="max-w-3xl mx-auto">
                     <PessoaForm onSuccess={handleSuccess} />
                 </Card>
             )}

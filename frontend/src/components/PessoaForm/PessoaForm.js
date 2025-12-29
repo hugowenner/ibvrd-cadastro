@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { PessoaContext } from '../../contexts/PessoaContext';
 
-// Componente interno para reutilização de campos de formulário
 const FormInput = ({ label, id, name, value, onChange, type = 'text', required = false, ...props }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+    <div className="mb-5">
+        <label htmlFor={id} className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{label}</label>
         <input
             type={type}
             id={id}
@@ -14,7 +13,7 @@ const FormInput = ({ label, id, name, value, onChange, type = 'text', required =
             value={value}
             onChange={onChange}
             required={required}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd sm:text-sm transition-all duration-200 focus:ring-2"
+            className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition duration-200 ease-in-out"
             {...props}
         />
     </div>
@@ -47,7 +46,7 @@ const PessoaForm = () => {
         setError(null);
         try {
             await addPessoa(formData);
-            navigate('/pessoas'); // Redireciona para a lista de pessoas
+            navigate('/pessoas');
         } catch (err) {
             setError(err.message || 'Ocorreu um erro ao cadastrar a pessoa. Tente novamente.');
         } finally {
@@ -56,24 +55,26 @@ const PessoaForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate-pulse" role="alert">
-                    <strong className="font-bold">Erro: </strong>
-                    <span className="block sm:inline">{error}</span>
+                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm" role="alert">
+                    <p className="font-bold">Erro</p>
+                    <p>{error}</p>
                 </div>
             )}
 
-            <FormInput
-                label="Nome Completo"
-                id="nomeCompleto"
-                name="nomeCompleto"
-                value={formData.nomeCompleto}
-                onChange={handleChange}
-                required
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="col-span-1 md:col-span-2">
+                    <FormInput
+                        label="Nome Completo"
+                        id="nomeCompleto"
+                        name="nomeCompleto"
+                        value={formData.nomeCompleto}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormInput
                     label="Data de Nascimento"
                     id="dataNascimento"
@@ -92,39 +93,41 @@ const PessoaForm = () => {
                     type="tel"
                     required
                 />
-            </div>
 
-            <FormInput
-                label="E-mail"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                type="email"
-                required
-            />
+                <div className="col-span-1 md:col-span-2">
+                    <FormInput
+                        label="E-mail"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        type="email"
+                        required
+                    />
+                </div>
 
-            <FormInput
-                label="Endereço"
-                id="endereco"
-                name="endereco"
-                value={formData.endereco}
-                onChange={handleChange}
-                required
-            />
+                <div className="col-span-1 md:col-span-2">
+                    <FormInput
+                        label="Endereço"
+                        id="endereco"
+                        name="endereco"
+                        value={formData.endereco}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label htmlFor="tipo" className="block text-sm font-medium text-gray-700">Tipo</label>
-                    <select name="tipo" id="tipo" value={formData.tipo} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd sm:text-sm transition-all duration-200 focus:ring-2">
+                    <label htmlFor="tipo" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tipo</label>
+                    <select name="tipo" id="tipo" value={formData.tipo} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition duration-200 ease-in-out">
                         <option value="Visitante">Visitante</option>
                         <option value="Membro">Membro</option>
                         <option value="Líder">Líder</option>
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="ministerio" className="block text-sm font-medium text-gray-700">Ministério</label>
-                    <select name="ministerio" id="ministerio" value={formData.ministerio} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd sm:text-sm transition-all duration-200 focus:ring-2">
+                    <label htmlFor="ministerio" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ministério</label>
+                    <select name="ministerio" id="ministerio" value={formData.ministerio} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition duration-200 ease-in-out">
                         <option value="Nenhum">Nenhum</option>
                         <option value="Louvor">Louvor</option>
                         <option value="Música">Música</option>
@@ -135,16 +138,18 @@ const PessoaForm = () => {
                         <option value="Ação Social">Ação Social</option>
                     </select>
                 </div>
+
+                <div className="col-span-1 md:col-span-2">
+                    <label htmlFor="observacoes" className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Observações</label>
+                    <textarea name="observacoes" id="observacoes" value={formData.observacoes} onChange={handleChange} rows="4" className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600 transition duration-200 ease-in-out"></textarea>
+                </div>
             </div>
 
-            <div>
-                <label htmlFor="observacoes" className="block text-sm font-medium text-gray-700">Observações</label>
-                <textarea name="observacoes" id="observacoes" value={formData.observacoes} onChange={handleChange} rows="3" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-azul-ibvrd focus:border-azul-ibvrd sm:text-sm transition-all duration-200 focus:ring-2"></textarea>
+            <div className="pt-4">
+                <button type="submit" disabled={isSubmitting} className="w-full bg-amber-600 text-white font-bold uppercase tracking-widest text-sm py-4 px-6 rounded shadow hover:bg-amber-700 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed hover:shadow-lg transform hover:-translate-y-0.5">
+                    {isSubmitting ? 'Processando...' : 'Cadastrar Pessoa'}
+                </button>
             </div>
-
-            <button type="submit" disabled={isSubmitting} className="w-full bg-azul-ibvrd text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95">
-                {isSubmitting ? 'Cadastrando...' : 'Cadastrar Pessoa'}
-            </button>
         </form>
     );
 };

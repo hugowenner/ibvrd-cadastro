@@ -5,7 +5,6 @@ import Card from '../../components/Card/Card';
 const Dashboard = () => {
     const { pessoas, loading, error } = useContext(PessoaContext);
 
-    // CORREÇÃO: useMemo movido para o topo, antes de qualquer lógica condicional
     const estatisticas = useMemo(() => {
         const totalPessoas = pessoas.length;
         const totalMembros = pessoas.filter(p => p.tipo === 'Membro').length;
@@ -31,39 +30,45 @@ const Dashboard = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-azul-ibvrd"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <Card>
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded animate-pulse">
-                    <strong>Erro:</strong> Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.
+            <Card className="border-l-4 border-l-red-500">
+                <div className="text-red-700">
+                    <strong className="font-bold block">Erro:</strong> 
+                    Não foi possível carregar os dados do dashboard.
                 </div>
             </Card>
         );
     }
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+        <div className="animate-fade-in">
+            <div className="mb-10 pb-4 border-b border-gray-200">
+                <h2 className="text-3xl md:text-4xl font-serif text-gray-900 font-normal">Visão Geral</h2>
+                <p className="text-gray-500 mt-2 font-light">Resumo estatístico da comunidade.</p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                <Card title="Total de Pessoas" aria-label={`Total de ${estatisticas.totalPessoas} pessoas cadastradas`}>
-                    <p className="text-3xl font-bold text-azul-ibvrd transition-transform duration-300 hover:scale-110">{estatisticas.totalPessoas}</p>
+                <Card title="Total de Pessoas">
+                    <p className="text-4xl font-serif text-gray-800 font-bold mt-2">{estatisticas.totalPessoas}</p>
                 </Card>
-                <Card title="Membros" aria-label={`${estatisticas.totalMembros} membros cadastrados`}>
-                    <p className="text-3xl font-bold text-green-600 transition-transform duration-300 hover:scale-110">{estatisticas.totalMembros}</p>
+                <Card title="Membros">
+                    <p className="text-4xl font-serif text-amber-700 font-bold mt-2">{estatisticas.totalMembros}</p>
                 </Card>
-                <Card title="Visitantes" aria-label={`${estatisticas.totalVisitantes} visitantes cadastrados`}>
-                    <p className="text-3xl font-bold text-yellow-600 transition-transform duration-300 hover:scale-110">{estatisticas.totalVisitantes}</p>
+                <Card title="Visitantes">
+                    <p className="text-4xl font-serif text-blue-600 font-bold mt-2">{estatisticas.totalVisitantes}</p>
                 </Card>
-                <Card title="Líderes" aria-label={`${estatisticas.totalLideres} líderes cadastrados`}>
-                    <p className="text-3xl font-bold text-purple-600 transition-transform duration-300 hover:scale-110">{estatisticas.totalLideres}</p>
+                <Card title="Líderes">
+                    <p className="text-4xl font-serif text-purple-700 font-bold mt-2">{estatisticas.totalLideres}</p>
                 </Card>
-                <Card title="Aniversariantes do Mês" aria-label={`${estatisticas.aniversariantesMes} pessoas fazem aniversário este mês`}>
-                    <p className="text-3xl font-bold text-pink-600 transition-transform duration-300 hover:scale-110">{estatisticas.aniversariantesMes}</p>
+                <Card title="Aniversariantes" className="xl:col-span-1">
+                    <p className="text-4xl font-serif text-pink-600 font-bold mt-2">{estatisticas.aniversariantesMes}</p>
+                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">Este Mês</p>
                 </Card>
             </div>
         </div>
