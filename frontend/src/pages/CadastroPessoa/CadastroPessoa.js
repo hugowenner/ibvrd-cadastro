@@ -17,21 +17,22 @@ const CadastroPessoa = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto animate-fade-in">
-            <div className="mb-10 pb-4 border-b border-gray-200">
-                <h2 className="text-3xl md:text-4xl font-serif text-gray-900 font-normal">Novo Cadastro</h2>
-                <p className="text-gray-500 mt-2 font-light">Preencha os dados abaixo para adicionar uma nova pessoa ao sistema.</p>
+        <div className="w-full max-w-5xl mx-auto animate-fade-in pb-12 px-4 md:px-0">
+            <div className="mb-8 md:mb-12 pb-4 border-b border-gray-200">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-gray-900 font-normal">Novo Cadastro</h2>
+                <p className="text-gray-500 mt-2 font-light text-sm md:text-base">Preencha os dados abaixo para adicionar uma nova pessoa ao sistema.</p>
             </div>
             
             {submitSuccess ? (
-                <Card className="border-t-4 border-t-green-500 bg-green-50">
-                    <div className="text-green-800">
-                        <strong className="font-bold block text-lg mb-1">Sucesso!</strong> 
-                        Pessoa cadastrada com sucesso! Redirecionando...
+                <Card className="border-t-4 border-t-green-500 bg-green-50 text-center">
+                    <div className="text-green-800 py-4 px-2">
+                        <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <strong className="font-bold block text-lg md:text-xl mb-2 font-serif">Sucesso!</strong> 
+                        <p className="text-sm md:text-base">Pessoa cadastrada com sucesso! Redirecionando...</p>
                     </div>
                 </Card>
             ) : (
-                <Card className="max-w-3xl mx-auto">
+                <Card className="max-w-4xl mx-auto">
                     <PessoaForm onSuccess={handleSuccess} />
                 </Card>
             )}

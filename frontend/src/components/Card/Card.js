@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 
 const Card = ({ title, children, className = "" }) => {
     return (
-        <div className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 p-6 ${className}`}>
+        <div className={`bg-white rounded-xl border border-gray-100 shadow-sm md:shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 md:p-8 ${className}`}>
             {title && (
-                <div className="mb-4">
-                    <h3 className="text-xl font-serif text-gray-800 font-semibold">{title}</h3>
-                    <div className="w-12 h-0.5 bg-amber-600 mt-2"></div>
+                <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h3 className="text-xl md:text-2xl font-serif text-gray-900 font-semibold tracking-tight">{title}</h3>
+                    <div className="h-1 w-full sm:w-auto sm:flex-1 sm:ml-6 bg-gradient-to-r from-amber-600 to-transparent opacity-50"></div>
                 </div>
             )}
             {children}

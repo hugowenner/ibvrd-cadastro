@@ -66,6 +66,7 @@ export const PessoaProvider = ({ children }) => {
         try {
             const response = await api.updatePessoa(id, pessoaData);
             
+            // Código corrigido aqui (era onde estava o erro)
             setPessoas(prevPessoas => 
                 prevPessoas.map(pessoa => 
                     pessoa.id === id ? response.data : pessoa
