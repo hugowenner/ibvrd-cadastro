@@ -1,6 +1,7 @@
+// src/pages/Aniversariantes/Aniversariantes.js
 import React, { useContext, useState, useMemo } from 'react';
 import { PessoaContext } from '../../contexts/PessoaContext';
-import Card from '../../components/Card/Card';
+import Card from '../../components/Card';
 
 const Aniversariantes = () => {
     const { pessoas, loading, error } = useContext(PessoaContext);

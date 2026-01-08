@@ -1,8 +1,9 @@
+// src/pages/CadastroPessoa/CadastroPessoa.js
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PessoaContext } from '../../contexts/PessoaContext';
-import PessoaForm from '../../components/PessoaForm/PessoaForm';
-import Card from '../../components/Card/Card';
+import PessoaForm from '../../components/PessoaForm';
+import Card from '../../components/Card';
 
 const CadastroPessoa = () => {
     const { addPessoa } = useContext(PessoaContext);

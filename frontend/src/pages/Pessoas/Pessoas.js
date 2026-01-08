@@ -1,7 +1,8 @@
+// src/pages/Pessoas/Pessoas.js
 import React, { useContext, useState, useMemo } from 'react';
 import { PessoaContext } from '../../contexts/PessoaContext';
-import Table from '../../components/Table/Table';
-import Card from '../../components/Card/Card';
+import Table from '../../components/Table';
+import Card from '../../components/Card';
 import { useNavigate } from 'react-router-dom';
 
 const Pessoas = () => {

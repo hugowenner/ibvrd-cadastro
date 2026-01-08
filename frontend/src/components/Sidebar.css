@@ -1,0 +1,10 @@
+/* src/index.css */
+/* Mantive o arquivo base e adicionei o CSS snippet enviado para garantir estilização específica */
+
+a.active {
+    background-color: #1e4a7a; /* Um azul um pouco mais claro */
+    font-weight: bold;
+}
+
+/* Nota: O componente Sidebar utiliza classes do Tailwind que podem sobrescrever estilos globais. 
+   Se necessário, aumente a especificidade do seletor acima ou use !important. */

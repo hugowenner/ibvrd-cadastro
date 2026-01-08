@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Header from './components/Header/Header';
-import Sidebar from './components/Sidebar/Sidebar';
-import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import LoadingSpinner from './components/LoadingSpinner';
 
 /**
  * Componente de layout principal da aplicação
