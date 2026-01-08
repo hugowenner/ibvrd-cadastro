@@ -7,7 +7,6 @@ const Aniversariantes = () => {
     const { pessoas, loading, error } = useContext(PessoaContext);
     
     // Estado para controlar o mês selecionado (0 a 11)
-    // Inicializa com o mês atual
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
     const meses = [
@@ -16,20 +15,43 @@ const Aniversariantes = () => {
     ];
 
     const formatarData = (dataString) => {
-        if (!dataString) return '';
-        const [ano, mes, dia] = dataString.split('-');
-        return `${dia}/${mes}`;
+        if (!dataString) return 'Data inválida';
+        try {
+            // Tenta splitar primeiro para evitar problemas com timezone de new Date() em alguns navegadores
+            const parts = dataString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}`; // Dia/Mês
+            }
+            // Fallback para parse de data
+            const date = new Date(dataString);
+            if (isNaN(date.getTime())) return 'Data inválida';
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        } catch (e) {
+            return 'Data inválida';
+        }
     };
 
     const aniversariantesDoMes = useMemo(() => {
-        return pessoas.filter(pessoa => {
+        // 🔒 Segurança: Garante que é um array
+        const lista = Array.isArray(pessoas) ? pessoas : [];
+
+        return lista.filter(pessoa => {
             if (!pessoa.dataNascimento) return false;
-            const mesAniversario = new Date(pessoa.dataNascimento).getMonth();
-            return mesAniversario === selectedMonth;
+            try {
+                const mesAniversario = new Date(pessoa.dataNascimento).getMonth();
+                return mesAniversario === selectedMonth;
+            } catch (e) {
+                return false;
+            }
         }).sort((a, b) => {
-            const diaA = new Date(a.dataNascimento).getDate();
-            const diaB = new Date(b.dataNascimento).getDate();
-            return diaA - diaB;
+            // Ordenação segura por dia do mês
+            try {
+                const diaA = new Date(a.dataNascimento).getDate();
+                const diaB = new Date(b.dataNascimento).getDate();
+                return diaA - diaB;
+            } catch (e) {
+                return 0;
+            }
         });
     }, [pessoas, selectedMonth]);
 
@@ -89,14 +111,14 @@ const Aniversariantes = () => {
                         <Card key={pessoa.id} className="text-center hover:border-amber-300 group transform hover:-translate-y-1 transition-all duration-300">
                             <div className="flex flex-col items-center">
                                 <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-stone-50 to-stone-100 border-2 border-amber-600 rounded-full flex items-center justify-center text-gray-800 text-xl md:text-2xl font-serif font-bold mb-4 md:mb-6 shadow-md group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                                    {pessoa.nomeCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                    {pessoa.nomeCompleto ? pessoa.nomeCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : ''}
                                 </div>
-                                <h3 className="text-lg md:text-xl font-serif text-gray-900 mb-2 font-medium">{pessoa.nomeCompleto}</h3>
+                                <h3 className="text-lg md:text-xl font-serif text-gray-900 mb-2 font-medium">{pessoa.nomeCompleto || 'Nome não informado'}</h3>
                                 <p className="text-amber-700 font-serif font-bold mb-4 md:mb-6 text-base md:text-lg">
                                     {formatarData(pessoa.dataNascimento)}
                                 </p>
                                 <span className="inline-block bg-amber-50 text-amber-800 text-[10px] md:text-xs font-bold uppercase tracking-widest px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-amber-100 shadow-sm">
-                                    {pessoa.tipo}
+                                    {pessoa.tipo || 'N/A'}
                                 </span>
                             </div>
                         </Card>

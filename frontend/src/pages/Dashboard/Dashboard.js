@@ -7,13 +7,16 @@ const Dashboard = () => {
     const { pessoas, loading, error } = useContext(PessoaContext);
 
     const estatisticas = useMemo(() => {
-        const totalPessoas = pessoas.length;
-        const totalMembros = pessoas.filter(p => p.tipo === 'Membro').length;
-        const totalVisitantes = pessoas.filter(p => p.tipo === 'Visitante').length;
-        const totalLideres = pessoas.filter(p => p.tipo === 'Líder').length;
+        // 🔒 Segurança: Garante que pessoas seja um array antes de calcular
+        const lista = Array.isArray(pessoas) ? pessoas : [];
+
+        const totalPessoas = lista.length;
+        const totalMembros = lista.filter(p => p.tipo === 'Membro').length;
+        const totalVisitantes = lista.filter(p => p.tipo === 'Visitante').length;
+        const totalLideres = lista.filter(p => p.tipo === 'Líder').length;
         
         const mesAtual = new Date().getMonth();
-        const aniversariantesMes = pessoas.filter(pessoa => {
+        const aniversariantesMes = lista.filter(pessoa => {
             if (!pessoa.dataNascimento) return false;
             const mesAniversario = new Date(pessoa.dataNascimento).getMonth();
             return mesAniversario === mesAtual;

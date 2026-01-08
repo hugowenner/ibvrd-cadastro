@@ -1,5 +1,9 @@
-// src/contexts/PessoaContext.js
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, {
+    createContext,
+    useState,
+    useEffect,
+    useCallback
+} from 'react';
 import PropTypes from 'prop-types';
 import { api } from '../services/api';
 
@@ -10,34 +14,66 @@ export const PessoaProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Lista de ministérios disponíveis para seleção
     const MINISTERIOS_DISPONIVEIS = [
-        'Louvor', 'Música', 'Infantil', 'Adolescentes', 
-        'Jovens', 'Missões', 'Ação Social', 'Intercessão', 'Ushers', 'Diaconia'
+        'Louvor',
+        'Música',
+        'Infantil',
+        'Adolescentes',
+        'Jovens',
+        'Missões',
+        'Ação Social',
+        'Intercessão',
+        'Ushers',
+        'Diaconia'
     ];
 
-    // Função auxiliar para normalizar dados
-    const normalizePessoa = (pessoa) => {
-        return {
-            ...pessoa,
-            status: pessoa.status || 'Ativo',
-            ministerios: Array.isArray(pessoa.ministerios) 
-                ? pessoa.ministerios 
-                : (pessoa.ministerio ? [pessoa.ministerio] : []),
-            historico: pessoa.historico || []
-        };
-    };
+    /* =========================
+       NORMALIZAÇÃO BACK → FRONT
+    ========================== */
+    const normalizePessoa = (pessoa) => ({
+        id: pessoa.id,
+        nomeCompleto: pessoa.nome_completo,
+        dataNascimento: pessoa.data_nascimento,
+        telefone: pessoa.telefone,
+        email: pessoa.email,
+        endereco: pessoa.endereco,
+        tipo: pessoa.tipo,
+        status: pessoa.status || 'Ativo',
+        ministerios: pessoa.ministerio ? [pessoa.ministerio] : [],
+        observacoes: pessoa.observacoes,
+        historico: pessoa.historico || []
+    });
 
+    /* =========================
+       NORMALIZAÇÃO FRONT → BACK
+    ========================== */
+    const serializePessoa = (pessoa) => ({
+        nomeCompleto: pessoa.nomeCompleto,
+        dataNascimento: pessoa.dataNascimento,
+        telefone: pessoa.telefone,
+        email: pessoa.email,
+        endereco: pessoa.endereco,
+        tipo: pessoa.tipo,
+        ministerio: Array.isArray(pessoa.ministerios)
+            ? pessoa.ministerios[0] || null
+            : pessoa.ministerio || null,
+        observacoes: pessoa.observacoes
+    });
+
+    /* =========================
+       FETCH
+    ========================== */
     const fetchPessoas = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await api.getPessoas();
-            const normalizedData = response.data.map(normalizePessoa);
-            setPessoas(normalizedData);
+
+            const response = await api.getPessoas(); // retorna array
+            setPessoas(response.map(normalizePessoa));
+
         } catch (err) {
-            console.error("Falha ao buscar pessoas:", err);
-            setError("Não foi possível carregar a lista de pessoas. Tente novamente mais tarde.");
+            console.error(err);
+            setError('Erro ao carregar pessoas.');
         } finally {
             setLoading(false);
         }
@@ -47,84 +83,146 @@ export const PessoaProvider = ({ children }) => {
         fetchPessoas();
     }, [fetchPessoas]);
 
+    /* =========================
+       ADD
+    ========================== */
     const addPessoa = async (pessoaData) => {
         const tempId = `temp-${Date.now()}`;
-        const dataToSubmit = {
+        const optimisticPessoa = {
             ...pessoaData,
-            status: pessoaData.status || 'Ativo',
-            ministerios: Array.isArray(pessoaData.ministerios) ? pessoaData.ministerios : (pessoaData.ministerio ? [pessoaData.ministerio] : []),
+            id: tempId,
             historico: []
         };
-        const optimisticPessoa = { ...dataToSubmit, id: tempId };
-        
+
         try {
-            setPessoas(prevPessoas => [...prevPessoas, normalizePessoa(optimisticPessoa)]);
-            const response = await api.addPessoa(dataToSubmit);
-            setPessoas(prevPessoas => 
-                prevPessoas.map(pessoa => 
-                    pessoa.id === tempId ? normalizePessoa(response.data) : pessoa
+            setPessoas(prev => [...prev, optimisticPessoa]);
+
+            const response = await api.addPessoa(
+                serializePessoa(pessoaData)
+            );
+
+            const pessoaNormalizada = normalizePessoa(response);
+
+            setPessoas(prev =>
+                prev.map(p =>
+                    p.id === tempId ? pessoaNormalizada : p
                 )
             );
-            return response.data;
+
+            return pessoaNormalizada;
+
         } catch (err) {
-            console.error("Falha ao adicionar pessoa:", err);
-            setPessoas(prevPessoas => prevPessoas.filter(pessoa => pessoa.id !== tempId));
-            throw new Error("Não foi possível cadastrar a pessoa. Tente novamente.");
+            console.error(err);
+            setPessoas(prev => prev.filter(p => p.id !== tempId));
+            throw new Error('Erro ao cadastrar pessoa.');
         }
     };
 
+    /* =========================
+       HISTÓRICO
+    ========================== */
     const generateHistoryEntries = (oldData, newData) => {
         const entries = [];
-        const camposMonitorados = ['nomeCompleto', 'tipo', 'status', 'ministerios'];
-        camposMonitorados.forEach(campo => {
-            const valOld = oldData[campo];
-            const valNew = newData[campo];
-            if (typeof valOld !== 'object' && typeof valNew !== 'object') {
-                if (valOld !== valNew) entries.push({ data: new Date().toISOString(), campo, valorAnterior: valOld, valorNovo: valNew });
-            } else if (Array.isArray(valOld) && Array.isArray(valNew)) {
-                if ([...valOld].sort().join(', ') !== [...valNew].sort().join(', ')) {
-                    entries.push({ data: new Date().toISOString(), campo, valorAnterior: valOld.join(', '), valorNovo: valNew.join(', ') });
+        const campos = ['nomeCompleto', 'tipo', 'status', 'ministerios'];
+
+        campos.forEach(campo => {
+            const oldVal = oldData?.[campo];
+            const newVal = newData?.[campo];
+
+            if (Array.isArray(oldVal) && Array.isArray(newVal)) {
+                if (oldVal.join() !== newVal.join()) {
+                    entries.push({
+                        data: new Date().toISOString(),
+                        campo,
+                        valorAnterior: oldVal.join(', '),
+                        valorNovo: newVal.join(', ')
+                    });
                 }
+            } else if (oldVal !== newVal) {
+                entries.push({
+                    data: new Date().toISOString(),
+                    campo,
+                    valorAnterior: oldVal,
+                    valorNovo: newVal
+                });
             }
         });
+
         return entries;
     };
 
+    /* =========================
+       UPDATE
+    ========================== */
     const updatePessoa = async (id, pessoaData) => {
         const currentPessoa = pessoas.find(p => p.id === id);
-        const novasEntradasHistorico = currentPessoa ? generateHistoryEntries(currentPessoa, pessoaData) : [];
-        const payload = { ...pessoaData, historico: [...(currentPessoa?.historico || []), ...novasEntradasHistorico] };
+
+        const historico = currentPessoa
+            ? [
+                ...(currentPessoa.historico || []),
+                ...generateHistoryEntries(currentPessoa, pessoaData)
+            ]
+            : [];
+
         try {
-            const response = await api.updatePessoa(id, payload);
-            setPessoas(prevPessoas => prevPessoas.map(pessoa => pessoa.id === id ? normalizePessoa(response.data) : pessoa));
-            return response.data;
+            const response = await api.updatePessoa(
+                id,
+                serializePessoa(pessoaData)
+            );
+
+            const pessoaAtualizada = {
+                ...normalizePessoa(response),
+                historico
+            };
+
+            setPessoas(prev =>
+                prev.map(p =>
+                    p.id === id ? pessoaAtualizada : p
+                )
+            );
+
+            return pessoaAtualizada;
+
         } catch (err) {
-            console.error("Falha ao atualizar pessoa:", err);
-            throw new Error("Não foi possível atualizar os dados da pessoa. Tente novamente.");
+            console.error(err);
+            throw new Error('Erro ao atualizar pessoa.');
         }
     };
 
+    /* =========================
+       DELETE
+    ========================== */
     const deletePessoa = async (id) => {
-        const originalPessoa = pessoas.find(pessoa => pessoa.id === id);
+        const backup = pessoas;
+
         try {
-            setPessoas(prevPessoas => prevPessoas.filter(pessoa => pessoa.id !== id));
+            setPessoas(prev => prev.filter(p => p.id !== id));
             await api.deletePessoa(id);
         } catch (err) {
-            console.error("Falha ao excluir pessoa:", err);
-            if (originalPessoa) setPessoas(prevPessoas => [...prevPessoas, originalPessoa]);
-            throw new Error("Não foi possível excluir a pessoa. Tente novamente.");
+            console.error(err);
+            setPessoas(backup);
+            throw new Error('Erro ao excluir pessoa.');
         }
     };
 
     return (
-        <PessoaContext.Provider value={{ 
-            pessoas, loading, error, fetchPessoas,
-            addPessoa, updatePessoa, deletePessoa,
-            MINISTERIOS_DISPONIVEIS 
-        }}>
+        <PessoaContext.Provider
+            value={{
+                pessoas,
+                loading,
+                error,
+                fetchPessoas,
+                addPessoa,
+                updatePessoa,
+                deletePessoa,
+                MINISTERIOS_DISPONIVEIS
+            }}
+        >
             {children}
         </PessoaContext.Provider>
     );
 };
 
-PessoaProvider.propTypes = { children: PropTypes.node.isRequired };
+PessoaProvider.propTypes = {
+    children: PropTypes.node.isRequired
+};

@@ -81,16 +81,19 @@ const Pessoas = () => {
     };
 
     const filteredPessoas = useMemo(() => {
-        let filtered = pessoas.filter(pessoa => {
-            const matchesSearch = pessoa.nomeCompleto.toLowerCase().includes(searchTerm.toLowerCase());
+        // 🔒 Segurança: Garante que sempre trabalharemos com um array
+        const listaPessoas = Array.isArray(pessoas) ? pessoas : [];
+
+        let filtered = listaPessoas.filter(pessoa => {
+            const matchesSearch = pessoa.nomeCompleto?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
             const matchesFilter = filterType === 'Todos' || pessoa.tipo === filterType;
             return matchesSearch && matchesFilter;
         });
 
         if (sortConfig.key) {
             filtered.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+                const aValue = a[sortConfig.key] ?? '';
+                const bValue = b[sortConfig.key] ?? '';
                 
                 if (aValue < bValue) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
