@@ -1,20 +1,8 @@
 <?php
-// backend/api/config.php
-
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Content-Type: application/json; charset=UTF-8");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
 $host = "localhost";
 $dbname = "thia7642_pessoas_db";
 $user = "thia7642_hugowenner";
-$pass = "@Geforce9600gt"; // ⚠️ depois mova isso para .env
+$pass = "@Geforce9600gt"; // ⚠️ coloque a senha real
 
 try {
     $pdo = new PDO(
