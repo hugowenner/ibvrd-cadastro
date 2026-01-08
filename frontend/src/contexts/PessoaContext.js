@@ -41,6 +41,7 @@ export const PessoaProvider = ({ children }) => {
         status: pessoa.status || 'Ativo',
         ministerios: pessoa.ministerio ? [pessoa.ministerio] : [],
         observacoes: pessoa.observacoes,
+        dataCadastro: pessoa.data_cadastro,
         historico: pessoa.historico || []
     });
 
@@ -49,28 +50,24 @@ export const PessoaProvider = ({ children }) => {
     ========================== */
     const serializePessoa = (pessoa) => ({
         nomeCompleto: pessoa.nomeCompleto,
-        dataNascimento: pessoa.dataNascimento,
-        telefone: pessoa.telefone,
-        email: pessoa.email,
-        endereco: pessoa.endereco,
-        tipo: pessoa.tipo,
+        dataNascimento: pessoa.dataNascimento || null,
+        telefone: pessoa.telefone || null,
+        email: pessoa.email || null,
+        endereco: pessoa.endereco || null,
+        tipo: pessoa.tipo || 'Visitante',
         ministerio: Array.isArray(pessoa.ministerios)
             ? pessoa.ministerios[0] || null
             : pessoa.ministerio || null,
-        observacoes: pessoa.observacoes
+        observacoes: pessoa.observacoes || null
     });
 
-    /* =========================
-       FETCH
-    ========================== */
     const fetchPessoas = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await api.getPessoas(); // retorna array
+            const response = await api.getPessoas();
             setPessoas(response.map(normalizePessoa));
-
         } catch (err) {
             console.error(err);
             setError('Erro ao carregar pessoas.');
@@ -83,9 +80,6 @@ export const PessoaProvider = ({ children }) => {
         fetchPessoas();
     }, [fetchPessoas]);
 
-    /* =========================
-       ADD
-    ========================== */
     const addPessoa = async (pessoaData) => {
         const tempId = `temp-${Date.now()}`;
         const optimisticPessoa = {
@@ -110,7 +104,6 @@ export const PessoaProvider = ({ children }) => {
             );
 
             return pessoaNormalizada;
-
         } catch (err) {
             console.error(err);
             setPessoas(prev => prev.filter(p => p.id !== tempId));
@@ -118,50 +111,11 @@ export const PessoaProvider = ({ children }) => {
         }
     };
 
-    /* =========================
-       HISTÓRICO
-    ========================== */
-    const generateHistoryEntries = (oldData, newData) => {
-        const entries = [];
-        const campos = ['nomeCompleto', 'tipo', 'status', 'ministerios'];
-
-        campos.forEach(campo => {
-            const oldVal = oldData?.[campo];
-            const newVal = newData?.[campo];
-
-            if (Array.isArray(oldVal) && Array.isArray(newVal)) {
-                if (oldVal.join() !== newVal.join()) {
-                    entries.push({
-                        data: new Date().toISOString(),
-                        campo,
-                        valorAnterior: oldVal.join(', '),
-                        valorNovo: newVal.join(', ')
-                    });
-                }
-            } else if (oldVal !== newVal) {
-                entries.push({
-                    data: new Date().toISOString(),
-                    campo,
-                    valorAnterior: oldVal,
-                    valorNovo: newVal
-                });
-            }
-        });
-
-        return entries;
-    };
-
-    /* =========================
-       UPDATE
-    ========================== */
     const updatePessoa = async (id, pessoaData) => {
         const currentPessoa = pessoas.find(p => p.id === id);
 
         const historico = currentPessoa
-            ? [
-                ...(currentPessoa.historico || []),
-                ...generateHistoryEntries(currentPessoa, pessoaData)
-            ]
+            ? [...(currentPessoa.historico || [])]
             : [];
 
         try {
@@ -182,16 +136,12 @@ export const PessoaProvider = ({ children }) => {
             );
 
             return pessoaAtualizada;
-
         } catch (err) {
             console.error(err);
             throw new Error('Erro ao atualizar pessoa.');
         }
     };
 
-    /* =========================
-       DELETE
-    ========================== */
     const deletePessoa = async (id) => {
         const backup = pessoas;
 
