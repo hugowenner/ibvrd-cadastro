@@ -1,18 +1,28 @@
 // src/services/api.js
 
-// Usa URL RELATIVA (mesmo domínio)
-const API_URL = '/backend/api/pessoas.php';
+/**
+ * URL da API definida por ambiente
+ * - localhost  → .env.development
+ * - produção   → .env.production
+ */
+const API_URL = process.env.REACT_APP_API_URL;
+
+if (!API_URL) {
+    console.error('REACT_APP_API_URL não definida');
+}
 
 export const api = {
-    getPessoas: async () => {
+    async getPessoas() {
         const response = await fetch(API_URL);
+
         if (!response.ok) {
             throw new Error('Erro ao buscar pessoas');
         }
+
         return response.json();
     },
 
-    addPessoa: async (pessoa) => {
+    async addPessoa(pessoa) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -29,7 +39,7 @@ export const api = {
         return response.json();
     },
 
-    updatePessoa: async (id, pessoa) => {
+    async updatePessoa(id, pessoa) {
         const response = await fetch(`${API_URL}?id=${id}`, {
             method: 'PUT',
             headers: {
@@ -46,7 +56,7 @@ export const api = {
         return response.json();
     },
 
-    deletePessoa: async (id) => {
+    async deletePessoa(id) {
         const response = await fetch(`${API_URL}?id=${id}`, {
             method: 'DELETE'
         });

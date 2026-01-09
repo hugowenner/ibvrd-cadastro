@@ -1,5 +1,6 @@
 <?php
 // backend/api/pessoas.php
+
 require_once 'config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -19,7 +20,7 @@ try {
                 $stmt = $pdo->prepare("SELECT * FROM pessoas WHERE id = :id");
                 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
                 $stmt->execute();
-                $response = $stmt->fetch(PDO::FETCH_ASSOC);
+                $response = $stmt->fetch();
 
                 if (!$response) {
                     http_response_code(404);
@@ -27,7 +28,7 @@ try {
                 }
             } else {
                 $stmt = $pdo->query("SELECT * FROM pessoas ORDER BY id DESC");
-                $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $response = $stmt->fetchAll();
             }
             break;
 
@@ -61,14 +62,14 @@ try {
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':nome' => $input['nomeCompleto'],
-                ':nasc' => $input['dataNascimento'] ?? null,
-                ':tel'  => $input['telefone'] ?? null,
-                ':email'=> $input['email'] ?? null,
-                ':end'  => $input['endereco'] ?? null,
-                ':tipo' => $input['tipo'] ?? 'Visitante',
-                ':min'  => $input['ministerio'] ?? null,
-                ':obs'  => $input['observacoes'] ?? null
+                ':nome'  => $input['nomeCompleto'],
+                ':nasc'  => $input['dataNascimento'] ?? null,
+                ':tel'   => $input['telefone'] ?? null,
+                ':email' => $input['email'] ?? null,
+                ':end'   => $input['endereco'] ?? null,
+                ':tipo'  => $input['tipo'] ?? 'Visitante',
+                ':min'   => $input['ministerio'] ?? null,
+                ':obs'   => $input['observacoes'] ?? null
             ]);
 
             $id = $pdo->lastInsertId();
@@ -78,7 +79,7 @@ try {
             $stmt->execute();
 
             http_response_code(201);
-            $response = $stmt->fetch(PDO::FETCH_ASSOC);
+            $response = $stmt->fetch();
             break;
 
         /* =========================
@@ -103,22 +104,22 @@ try {
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':id'   => $id,
-                ':nome' => $input['nomeCompleto'],
-                ':nasc' => $input['dataNascimento'] ?? null,
-                ':tel'  => $input['telefone'] ?? null,
-                ':email'=> $input['email'] ?? null,
-                ':end'  => $input['endereco'] ?? null,
-                ':tipo' => $input['tipo'] ?? 'Visitante',
-                ':min'  => $input['ministerio'] ?? null,
-                ':obs'  => $input['observacoes'] ?? null
+                ':id'    => $id,
+                ':nome'  => $input['nomeCompleto'],
+                ':nasc'  => $input['dataNascimento'] ?? null,
+                ':tel'   => $input['telefone'] ?? null,
+                ':email' => $input['email'] ?? null,
+                ':end'   => $input['endereco'] ?? null,
+                ':tipo'  => $input['tipo'] ?? 'Visitante',
+                ':min'   => $input['ministerio'] ?? null,
+                ':obs'   => $input['observacoes'] ?? null
             ]);
 
             $stmt = $pdo->prepare("SELECT * FROM pessoas WHERE id = :id");
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
 
-            $response = $stmt->fetch(PDO::FETCH_ASSOC);
+            $response = $stmt->fetch();
             break;
 
         /* =========================

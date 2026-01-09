@@ -11,26 +11,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$host = "localhost";
-$dbname = "thia7642_pessoas_db";
-$user = "thia7642_hugowenner";
-$pass = "@Geforce9600gt"; // ⚠️ depois mova isso para .env
+$envFile = __DIR__ . '/../.env';
+$env = parse_ini_file($envFile);
+
+$appEnv = $env['APP_ENV'] ?? 'local';
 
 try {
-    $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $user,
-        $pass,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]
-    );
+    if ($appEnv === 'local') {
+        // SQLITE
+        $dbPath = __DIR__ . '/../database/ibvrd.sqlite';
+        $pdo = new PDO("sqlite:$dbPath");
+    } else {
+        // MYSQL (produção)
+        $pdo = new PDO(
+            "mysql:host={$env['DB_HOST']};dbname={$env['DB_NAME']};charset=utf8mb4",
+            $env['DB_USER'],
+            $env['DB_PASS']
+        );
+    }
+
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode([
-        "error" => "Erro de conexão com o banco",
-        "details" => $e->getMessage()
+        'error' => 'Erro de conexão com o banco',
+        'details' => $appEnv === 'local'
+            ? $e->getMessage()
+            : 'Erro interno'
     ]);
     exit;
 }
