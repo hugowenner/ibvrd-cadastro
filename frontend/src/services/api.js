@@ -13,7 +13,8 @@ if (!API_URL) {
 
 export const api = {
     async getPessoas() {
-        const response = await fetch(API_URL);
+        // CORREÇÃO: Adicionado '/pessoas.php' ao final da URL
+        const response = await fetch(`${API_URL}/pessoas.php`);
 
         if (!response.ok) {
             throw new Error('Erro ao buscar pessoas');
@@ -23,7 +24,8 @@ export const api = {
     },
 
     async addPessoa(pessoa) {
-        const response = await fetch(API_URL, {
+        // CORREÇÃO: Adicionado '/pessoas.php' ao final da URL
+        const response = await fetch(`${API_URL}/pessoas.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,7 +42,8 @@ export const api = {
     },
 
     async updatePessoa(id, pessoa) {
-        const response = await fetch(`${API_URL}?id=${id}`, {
+        // CORREÇÃO: Adicionado '/pessoas.php' antes do parâmetro ?id=
+        const response = await fetch(`${API_URL}/pessoas.php?id=${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -57,7 +60,8 @@ export const api = {
     },
 
     async deletePessoa(id) {
-        const response = await fetch(`${API_URL}?id=${id}`, {
+        // CORREÇÃO: Adicionado '/pessoas.php' antes do parâmetro ?id=
+        const response = await fetch(`${API_URL}/pessoas.php?id=${id}`, {
             method: 'DELETE'
         });
 

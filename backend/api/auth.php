@@ -1,66 +1,100 @@
 <?php
 // backend/api/auth.php
 
-require_once 'config.php';
+// ===============================
+// INCLUDE CONFIG (CORS E DB)
+// ===============================
+require_once __DIR__ . '/config.php';
 
-// Apenas método POST é permitido para login
+// ===============================
+// APENAS POST
+// ===============================
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Método não permitido']);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Método não permitido'
+    ]);
     exit;
 }
 
- $input = json_decode(file_get_contents('php://input'), true);
+// ===============================
+// INPUT JSON
+// ===============================
+ $rawInput = file_get_contents('php://input');
+ $input = json_decode($rawInput, true);
 
-if (empty($input['email']) || empty($input['password'])) {
+if (!$input || empty($input['email']) || empty($input['password'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Email e senha são obrigatórios']);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Email e senha são obrigatórios'
+    ]);
     exit;
 }
 
- $email = $input['email'];
+ $email = trim($input['email']);
  $password = $input['password'];
 
 try {
-    // 1. Buscar usuário pelo email
-    // Assumindo que a tabela 'users' existe
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
+    // ===============================
+    // BUSCAR USUÁRIO
+    // ===============================
+    $stmt = $pdo->prepare("
+        SELECT id, nome, email, password
+        FROM users
+        WHERE email = :email
+        LIMIT 1
+    ");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // 2. Verificar se existe e se a senha bate
-    if ($user && password_verify($password, $user['password'])) {
-        
-        // 3. Gerar Token Simples (apenas se não tiver um válido ou para renovar)
-        // Aqui vamos gerar um novo token a cada login por segurança
-        $newToken = bin2hex(random_bytes(32));
-        
-        $updateStmt = $pdo->prepare("UPDATE users SET api_token = :token WHERE id = :id");
-        $updateStmt->execute([
-            ':token' => $newToken,
-            ':id' => $user['id']
-        ]);
-
-        // 4. Retornar sucesso e dados básicos (sem senha!)
-        echo json_encode([
-            'success' => true,
-            'message' => 'Login realizado com sucesso',
-            'token' => $newToken,
-            'user' => [
-                'id' => $user['id'],
-                'nome' => $user['nome'],
-                'email' => $user['email']
-            ]
-        ]);
-
-    } else {
-        // Senha incorreta ou usuário não encontrado
+    // ===============================
+    // VERIFICA CREDENCIAIS
+    // ===============================
+    if (!$user || !password_verify($password, $user['password'])) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Credenciais inválidas']);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Credenciais inválidas'
+        ]);
+        exit;
     }
 
-} catch (Exception $e) {
+    // ===============================
+    // GERAR NOVO TOKEN
+    // ===============================
+    $token = bin2hex(random_bytes(32));
+
+    $update = $pdo->prepare("
+        UPDATE users
+        SET api_token = :token
+        WHERE id = :id
+    ");
+    $update->execute([
+        ':token' => $token,
+        ':id' => $user['id']
+    ]);
+
+    // ===============================
+    // SUCESSO
+    // ===============================
+    echo json_encode([
+        'success' => true,
+        'message' => 'Login realizado com sucesso',
+        'token' => $token,
+        'user' => [
+            'id' => $user['id'],
+            'nome' => $user['nome'],
+            'email' => $user['email']
+        ]
+    ]);
+
+} catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Erro no servidor', 'details' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Erro interno do servidor'
+    ]);
 }

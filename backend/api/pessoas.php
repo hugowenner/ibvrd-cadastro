@@ -1,13 +1,12 @@
 <?php
 // backend/api/pessoas.php
 
+// O config.php já trata o CORS e a conexão DB
 require_once 'config.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
-$method = $_SERVER['REQUEST_METHOD'];
-$id = isset($_GET['id']) ? (int) $_GET['id'] : null;
-$input = json_decode(file_get_contents('php://input'), true);
+ $method = $_SERVER['REQUEST_METHOD'];
+ $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
+ $input = json_decode(file_get_contents('php://input'), true);
 
 try {
     switch ($method) {

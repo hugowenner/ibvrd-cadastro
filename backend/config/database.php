@@ -1,7 +1,7 @@
 <?php
 $host = "localhost";
 $dbname = "thia7642_pessoas_db";
-$user = "thia7642_hugowenner";
+$user = "thia7642_hugowenner ";
 $pass = "@Geforce9600gt"; // ⚠️ coloque a senha real
 
 try {

@@ -1,10 +1,11 @@
-// src/components/Sidebar.js
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus, FaTimes } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
+import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus, FaUserShield, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const { logout } = useAuth();
 
     // Toggle via Custom Event (comunicação com Header)
     useEffect(() => {
@@ -12,6 +13,14 @@ const Sidebar = () => {
         window.addEventListener('toggle-mobile-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-mobile-sidebar', handleToggle);
     }, []);
+
+    // Função de Logout
+    const handleLogout = () => {
+        logout();
+        if (window.innerWidth < 768) {
+            setIsOpen(false);
+        }
+    };
 
     const baseClasses = "flex items-center py-3 md:py-4 px-6 md:px-8 border-l-4 transition-all duration-300 group relative overflow-hidden";
     const activeClasses = "border-amber-600 bg-amber-50 text-amber-900 font-bold shadow-inner";
@@ -68,7 +77,24 @@ const Sidebar = () => {
                         <FaUserPlus className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
                         <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Cadastro</span>
                     </NavLink>
+                    
+                    {/* NOVA OPÇÃO NO MENU */}
+                    <NavLink to="/cadastro-usuario" className={linkClasses} onClick={() => setIsOpen(false)}>
+                        <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
+                        <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Usuário</span>
+                    </NavLink>
                 </nav>
+
+                {/* BOTÃO DE SAIR */}
+                <div className="p-4 md:p-6 border-t border-gray-50 mt-auto">
+                    <button 
+                        onClick={handleLogout}
+                        className="flex items-center w-full py-3 md:py-4 px-6 md:px-8 border-l-4 border-transparent text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200 hover:shadow-sm transition-all duration-300 group relative overflow-hidden"
+                    >
+                        <FaSignOutAlt className="text-lg transition-transform duration-300 group-hover:scale-110 text-gray-400 group-hover:text-red-600" />
+                        <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Sair do Sistema</span>
+                    </button>
+                </div>
 
                 <div className="p-6 md:p-8 border-t border-gray-50 bg-stone-50/30">
                     <div className="text-[10px] text-gray-400 text-center font-serif tracking-widest uppercase leading-relaxed">
