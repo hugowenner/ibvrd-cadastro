@@ -1,19 +1,20 @@
 <?php
 // backend/api/config.php
 
+// 1. Exibir erros (Importante para vermos se a conexão falha)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // ===============================
-// CONFIGURAÇÃO DE CORS GLOBAL
+// CONFIGURAÇÃO DE CORS
 // ===============================
-
 function sendCorsHeaders() {
     $allowed_origins = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        'https://cadastro.ibvrd.com.br'
+        'https://cadastro.ibvrd.com.br',
+        'https://www.cadastro.ibvrd.com.br'
     ];
 
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -24,9 +25,7 @@ function sendCorsHeaders() {
     }
 }
 
-// ===============================
-// PREFLIGHT (OPTIONS) — TEM QUE SER PRIMEIRO
-// ===============================
+// Responde imediatamente para requisições OPTIONS (Preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     sendCorsHeaders();
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -40,12 +39,11 @@ sendCorsHeaders();
 header("Content-Type: application/json; charset=UTF-8");
 
 // ===============================
-// AMBIENTE — FORÇADO LOCAL (DEBUG)
+// SELEÇÃO DE AMBIENTE
 // ===============================
-// ⚠️ IMPORTANTE:
-// Enquanto estiver usando `php -S localhost:8000`
-// vamos FORÇAR SQLite para não dar erro.
-$appEnv = 'local';
+// Detecta automaticamente se está rodando no localhost ou no servidor
+ $hostCheck = $_SERVER['HTTP_HOST'] ?? '';
+ $appEnv = (strpos($hostCheck, 'localhost') !== false || strpos($hostCheck, '127.0.0.1') !== false) ? 'local' : 'production';
 
 // ===============================
 // CONEXÃO COM BANCO DE DADOS
@@ -55,7 +53,7 @@ try {
     if ($appEnv === 'local') {
 
         // ===============================
-        // SQLITE (LOCAL)
+        // SQLITE (LOCAL / DESENVOLVIMENTO)
         // ===============================
         $dbPath = __DIR__ . '/../database/ibvrd.sqlite';
 
@@ -64,37 +62,42 @@ try {
         }
 
         $pdo = new PDO("sqlite:$dbPath");
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     } else {
 
         // ===============================
-        // MYSQL (PRODUÇÃO) — USAR DEPOIS
+        // MYSQL (PRODUÇÃO - HOSTGATOR)
         // ===============================
-        $envFile = __DIR__ . '/../.env';
-
-        if (!file_exists($envFile)) {
-            throw new Exception("Arquivo .env não encontrado");
-        }
-
-        $env = parse_ini_file($envFile);
+        // DADOS INSERIDOS BASEADO NO QUE VOCÊ ENVIU
+        
+        $host = "localhost";
+        $dbname = "thia7642_pessoas_db";
+        $user = "thia7642_hugowenner"; // Espaço removido manualmente aqui
+        $pass = "@Geforce9600gt";
 
         $pdo = new PDO(
-            "mysql:host={$env['DB_HOST']};dbname={$env['DB_NAME']};charset=utf8mb4",
-            $env['DB_USER'],
-            $env['DB_PASS']
+            "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+            $user,
+            $pass,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]
         );
     }
 
-    // Configurações do PDO
+    // Configurações gerais do PDO
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 } catch (Throwable $e) {
+    // Garante que ERROS de conexão voltem como JSON e não HTML
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Erro de conexão com o banco',
-        'details' => $e->getMessage() // DEBUG LOCAL
+        'error' => 'Erro de conexão com o banco de dados',
+        'details' => $e->getMessage()
     ]);
     exit;
 }
