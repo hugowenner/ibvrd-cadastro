@@ -8,6 +8,7 @@ if (!API_URL) {
 }
 
 const login = async (email, password) => {
+   console.log('Enviando login:', { email, password });
   const response = await fetch(`${API_URL}/auth.php`, {
     method: 'POST',
     headers: {
@@ -17,7 +18,10 @@ const login = async (email, password) => {
   });
 
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Erro ao fazer login');
+    console.log('Resposta do backend:', data);
+  if (!response.ok || !data.success) throw new Error(data.error || 'Erro ao fazer login');
+  localStorage.setItem('user', JSON.stringify(data.user));
+  localStorage.setItem('token', data.token);
   return data;
 };
 

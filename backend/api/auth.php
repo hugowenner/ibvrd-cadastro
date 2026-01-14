@@ -1,10 +1,13 @@
 <?php
-// backend/api/auth.php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php-error.log');
+error_reporting(E_ALL);
 
-// ===============================
-// INCLUDE CONFIG (CORS E DB)
-// ===============================
 require_once __DIR__ . '/config.php';
+
+header('Content-Type: application/json; charset=utf-8');
 
 // ===============================
 // APENAS POST
@@ -13,7 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
         'success' => false,
-        'error' => 'Método não permitido'
+        'error' => 'Método não permitido',
+        'debug' => [
+            'method' => $_SERVER['REQUEST_METHOD']
+        ]
     ]);
     exit;
 }
@@ -21,24 +27,41 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // ===============================
 // INPUT JSON
 // ===============================
- $rawInput = file_get_contents('php://input');
- $input = json_decode($rawInput, true);
+$rawInput = file_get_contents('php://input');
+$input = json_decode($rawInput, true);
 
-if (!$input || empty($input['email']) || empty($input['password'])) {
+if (json_last_error() !== JSON_ERROR_NONE) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => 'Email e senha são obrigatórios'
+        'error' => 'JSON inválido',
+        'debug' => [
+            'raw' => $rawInput
+        ]
     ]);
     exit;
 }
 
- $email = trim($input['email']);
- $password = $input['password'];
+if (
+    !is_array($input) ||
+    empty($input['email']) ||
+    empty($input['password'])
+) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Email e senha são obrigatórios',
+        'debug' => $input
+    ]);
+    exit;
+}
+
+$email = trim($input['email']);
+$password = $input['password'];
 
 try {
     // ===============================
-    // BUSCAR USUÁRIO
+    // BUSCA USUÁRIO
     // ===============================
     $stmt = $pdo->prepare("
         SELECT id, nome, email, password
@@ -46,24 +69,32 @@ try {
         WHERE email = :email
         LIMIT 1
     ");
-    $stmt->bindParam(':email', $email);
-    $stmt->execute();
+    $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // ===============================
-    // VERIFICA CREDENCIAIS
-    // ===============================
-    if (!$user || !password_verify($password, $user['password'])) {
+    if (!$user) {
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'error' => 'Credenciais inválidas'
+            'error' => 'Usuário não encontrado',
+            'debug' => [
+                'email' => $email
+            ]
+        ]);
+        exit;
+    }
+
+    if (!password_verify($password, $user['password'])) {
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Senha inválida'
         ]);
         exit;
     }
 
     // ===============================
-    // GERAR NOVO TOKEN
+    // TOKEN
     // ===============================
     $token = bin2hex(random_bytes(32));
 
@@ -73,16 +104,12 @@ try {
         WHERE id = :id
     ");
     $update->execute([
-        ':token' => $token,
-        ':id' => $user['id']
+        'token' => $token,
+        'id' => $user['id']
     ]);
 
-    // ===============================
-    // SUCESSO
-    // ===============================
     echo json_encode([
         'success' => true,
-        'message' => 'Login realizado com sucesso',
         'token' => $token,
         'user' => [
             'id' => $user['id'],
@@ -95,6 +122,11 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Erro interno do servidor'
+        'error' => 'Erro interno',
+        'debug' => [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]
     ]);
 }

@@ -10,18 +10,29 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+    // NOVA VERSÃO DO HANDLESUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError(''); // Limpa mensagens de erro antigas
+
     try {
+      // 1. Aguarda a função login terminar (vem do useAuth -> auth.js)
       await login(email, password);
-      navigate('/');
-    } catch (err) {
-      setError(err.message || 'Erro ao entrar');
+      
+      // 2. Se chegou aqui, o login deu certo e o token foi salvo.
+      //    Redireciona o usuário para o Dashboard.
+      navigate('/dashboard');
+      
+    } catch (error) {
+      // 3. Se cair aqui, deu erro (senha errada, sem rede, etc)
+      console.error('Erro no login:', error);
+      setError(error.message || 'Email ou senha incorretos.');
     }
   };
-
-  return (
+  
+  
+  
+    return (
     // Container principal em coluna para suportar o Header + Conteúdo centralizado
     <div className="min-h-screen flex flex-col bg-stone-50">
       
