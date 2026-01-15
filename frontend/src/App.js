@@ -5,6 +5,9 @@ import { PessoaProvider } from './contexts/PessoaContext';
 // NOVO IMPORT: Provider de Autenticação
 import { AuthProvider } from './contexts/AuthContext';
 
+// ADICIONADO: Provider de Oração
+import { OraçãoProvider } from './contexts/OraçãoContext';
+
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -15,13 +18,16 @@ function App() {
     <ErrorBoundary>
       {/* O AuthProvider fica por fora para gerenciar a sessão globalmente */}
       <AuthProvider>
-        <PessoaProvider>
-          <HashRouter>
-            <Suspense fallback={<LoadingSpinner />}>
-              <AppRoutes />
-            </Suspense>
-          </HashRouter>
-        </PessoaProvider>
+        {/* Adicionamos o OraçãoProvider para envolver o resto da aplicação */}
+        <OraçãoProvider>
+          <PessoaProvider>
+            <HashRouter>
+              <Suspense fallback={<LoadingSpinner />}>
+                <AppRoutes />
+              </Suspense>
+            </HashRouter>
+          </PessoaProvider>
+        </OraçãoProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

@@ -1,6 +1,6 @@
-// src/pages/Aniversariantes/Aniversariantes.js
 import React, { useContext, useState, useMemo } from 'react';
 import { PessoaContext } from '../../contexts/PessoaContext';
+import { FaWhatsapp } from 'react-icons/fa';
 import Card from '../../components/Card';
 
 const Aniversariantes = () => {
@@ -14,15 +14,36 @@ const Aniversariantes = () => {
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
+    // Função para gerar o link do WhatsApp com a mensagem personalizada
+    const gerarLinkWhatsApp = (nomeCompleto, telefone) => {
+        if (!telefone) return '#';
+
+        // 🔒 CORREÇÃO: Usando códigos Unicode (\u...) em vez de emojis diretos.
+        // Isso evita o problema de "caracteres com interrogação".
+        // 🙏 = \ud83d\ude4f | ✨ = \u2728 | 🎉 = \ud83c\udf89 | 🎂 = \ud83c\udf82
+        const mensagem = `Olá ${nomeCompleto}!
+
+A IBVRD agradece a Deus pela sua vida neste dia especial.
+Que o Senhor renove suas forças, fortaleça sua fé e derrame graça, paz e propósito sobre você.
+
+Feliz aniversário!
+
+O Senhor te abençoe e te guarde. (Nm 6:24)`;
+
+        // Remove caracteres não numéricos do telefone
+        const telefoneLimpo = telefone.replace(/\D/g, '');
+
+        // Formato: wa.me/55{telefone}
+        return `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagem)}`;
+    };
+
     const formatarData = (dataString) => {
         if (!dataString) return 'Data inválida';
         try {
-            // Tenta splitar primeiro para evitar problemas com timezone de new Date() em alguns navegadores
             const parts = dataString.split('-');
             if (parts.length === 3) {
                 return `${parts[2]}/${parts[1]}`; // Dia/Mês
             }
-            // Fallback para parse de data
             const date = new Date(dataString);
             if (isNaN(date.getTime())) return 'Data inválida';
             return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
@@ -120,6 +141,20 @@ const Aniversariantes = () => {
                                 <span className="inline-block bg-amber-50 text-amber-800 text-[10px] md:text-xs font-bold uppercase tracking-widest px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-amber-100 shadow-sm">
                                     {pessoa.tipo || 'N/A'}
                                 </span>
+
+                                {/* --- BOTÃO WHATSAPP --- */}
+                                <a
+                                    href={gerarLinkWhatsApp(pessoa.nomeCompleto, pessoa.telefone)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`mt-6 w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-300 shadow-sm transform active:scale-95
+                                        ${pessoa.telefone 
+                                            ? 'bg-green-600 text-white hover:bg-green-700 hover:shadow-md hover:-translate-y-0.5' 
+                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                                >
+                                    <FaWhatsapp className="text-lg" />
+                                    {pessoa.telefone ? 'Parabenizar no WhatsApp' : 'Sem telefone'}
+                                </a>
                             </div>
                         </Card>
                     ))}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus, FaUserShield, FaTimes, FaSignOutAlt } from 'react-icons/fa';
+// ADICIONADO: Importar o ícone de Mãos Orando
+import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus, FaUserShield, FaTimes, FaSignOutAlt, FaPrayingHands } from 'react-icons/fa';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -78,7 +79,12 @@ const Sidebar = () => {
                         <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Cadastro</span>
                     </NavLink>
                     
-                    {/* NOVA OPÇÃO NO MENU */}
+                    {/* ADICIONADO: Link para Mural de Oração */}
+                    <NavLink to="/pedidos-oracao" className={linkClasses} onClick={() => setIsOpen(false)}>
+                        <FaPrayingHands className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
+                        <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Mural de Oração</span>
+                    </NavLink>
+
                     <NavLink to="/cadastro-usuario" className={linkClasses} onClick={() => setIsOpen(false)}>
                         <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
                         <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Usuário</span>
