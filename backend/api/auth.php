@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // ===============================
 // INPUT JSON
 // ===============================
-$rawInput = file_get_contents('php://input');
-$input = json_decode($rawInput, true);
+ $rawInput = file_get_contents('php://input');
+ $input = json_decode($rawInput, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
     http_response_code(400);
@@ -56,15 +56,16 @@ if (
     exit;
 }
 
-$email = trim($input['email']);
-$password = $input['password'];
+ $email = trim($input['email']);
+ $password = $input['password'];
 
 try {
     // ===============================
     // BUSCA USUÁRIO
     // ===============================
+    // ADICIONADO: Busca também a coluna 'role'
     $stmt = $pdo->prepare("
-        SELECT id, nome, email, password
+        SELECT id, nome, email, password, role
         FROM users
         WHERE email = :email
         LIMIT 1
@@ -108,13 +109,15 @@ try {
         'id' => $user['id']
     ]);
 
+    // ADICIONADO: Retorna o 'role' para o frontend
     echo json_encode([
         'success' => true,
         'token' => $token,
         'user' => [
             'id' => $user['id'],
             'nome' => $user['nome'],
-            'email' => $user['email']
+            'email' => $user['email'],
+            'role' => $user['role'] // Retorna se é admin ou lider
         ]
     ]);
 

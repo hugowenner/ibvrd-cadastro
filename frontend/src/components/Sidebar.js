@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-// Ícones: Incluindo FaPrayingHands e FaCalendarAlt
+// Ícones
 import { FaHome, FaUsers, FaBirthdayCake, FaUserPlus, FaUserShield, FaTimes, FaSignOutAlt, FaPrayingHands, FaCalendarAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const { logout } = useAuth();
+    const { logout, user } = useAuth(); // ADICIONADO: Pega o usuário logado
 
     // Toggle via Custom Event (comunicação com Header)
     useEffect(() => {
@@ -85,16 +85,19 @@ const Sidebar = () => {
                         <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Mural de Oração</span>
                     </NavLink>
 
-                    {/* ADICIONADO: Link para Histórico de Visitas */}
+                    {/* Link para Histórico de Visitas */}
                     <NavLink to="/visitas" className={linkClasses} onClick={() => setIsOpen(false)}>
                         <FaCalendarAlt className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
                         <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Histórico de Visitas</span>
                     </NavLink>
 
-                    <NavLink to="/cadastro-usuario" className={linkClasses} onClick={() => setIsOpen(false)}>
-                        <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
-                        <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Usuário</span>
-                    </NavLink>
+                    {/* ADICIONADO: Link para Novo Usuário (Só Admin) */}
+                    {user?.role === 'admin' && (
+                        <NavLink to="/cadastro-usuario" className={linkClasses} onClick={() => setIsOpen(false)}>
+                            <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
+                            <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Usuário</span>
+                        </NavLink>
+                    )}
                 </nav>
 
                 {/* BOTÃO DE SAIR */}

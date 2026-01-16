@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import auth from '../../services/auth'; // Importando o service atualizado
+import { useAuth } from '../../contexts/AuthContext'; // ADICIONADO: Para checar permissão
+import auth from '../../services/auth';
 import Card from '../../components/Card';
 
 const CadastroUsuario = () => {
     const navigate = useNavigate();
+    const { user } = useAuth(); // ADICIONADO: Pega usuário atual
+    
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        role: 'lider' // ADICIONADO: Campo para Nível
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
@@ -37,11 +41,10 @@ const CadastroUsuario = () => {
 
         setIsSubmitting(true);
         try {
-            await auth.createUser(formData.nome, formData.email, formData.password);
+            // ADICIONADO: Envia formData.role
+            await auth.createUser(formData.nome, formData.email, formData.password, formData.role);
             setSuccess(true);
-            setFormData({ nome: '', email: '', password: '', confirmPassword: '' });
-            // Opcional: Redirecionar após 2 segundos
-            // setTimeout(() => navigate('/usuarios'), 2000); 
+            setFormData({ nome: '', email: '', password: '', confirmPassword: '', role: 'lider' });
         } catch (err) {
             setError(err.message || 'Erro ao cadastrar usuário.');
         } finally {
@@ -134,6 +137,25 @@ const CadastroUsuario = () => {
                                 placeholder="Repita a senha"
                             />
                         </div>
+
+                        {/* ADICIONADO: Campo de Nível de Acesso (Só Admin vê) */}
+                        {user?.role === 'admin' && (
+                            <div>
+                                <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nível de Acesso</label>
+                                <select 
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleChange}
+                                    className="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all duration-300 shadow-sm appearance-none bg-no-repeat bg-right text-base"
+                                >
+                                    <option value="lider">Lider / Secretaria</option>
+                                    <option value="admin">Admin / Pastor</option>
+                                </select>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                    Admins podem criar usuários. Líderes não podem.
+                                </p>
+                            </div>
+                        )}
 
                         <div className="pt-4">
                             <button

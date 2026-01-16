@@ -18,7 +18,7 @@ const login = async (email, password) => {
   });
 
   const data = await response.json();
-    console.log('Resposta do backend:', data);
+  console.log('Resposta do backend:', data);
   if (!response.ok || !data.success) throw new Error(data.error || 'Erro ao fazer login');
   localStorage.setItem('user', JSON.stringify(data.user));
   localStorage.setItem('token', data.token);
@@ -40,7 +40,8 @@ const getToken = () => {
   return localStorage.getItem('token');
 };
 
-const createUser = async (nome, email, password) => {
+// --- ATUALIZADO: Adiciona o parâmetro 'role' ---
+const createUser = async (nome, email, password, role = 'lider') => {
   const token = getToken();
   if (!token) throw new Error('Você não está autenticado.');
 
@@ -50,7 +51,8 @@ const createUser = async (nome, email, password) => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ nome, email, password }),
+    // ADICIONADO: Envia o 'role' no corpo da requisição
+    body: JSON.stringify({ nome, email, password, role }),
   });
 
   const data = await response.json();
