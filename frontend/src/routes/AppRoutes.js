@@ -11,8 +11,11 @@ import Aniversariantes from '../pages/Aniversariantes/Aniversariantes';
 // Importe a página de Cadastro de Usuário
 import CadastroUsuario from '../pages/CadastroUsuario/CadastroUsuario';
 
-// ADICIONADO: Importe a página de Mural de Oração
+// Importe a página de Mural de Oração
 import PedidosOração from '../pages/PedidosOração/PedidosOração';
+
+// ADICIONADO: Importe a página de Histórico de Visitas
+import HistoricoVisitas from '../pages/HistoricoVisitas/HistoricoVisitas';
 
 // Autenticação
 import Login from '../pages/Login/Login';
@@ -38,8 +41,11 @@ const AppRoutes = () => {
                 <Route path="aniversariantes" element={<Aniversariantes />} />
                 <Route path="cadastro-usuario" element={<CadastroUsuario />} />
                 
-                {/* ADICIONADO: Rota do Mural de Oração */}
+                {/* Rota do Mural de Oração */}
                 <Route path="pedidos-oracao" element={<PedidosOração />} />
+                
+                {/* ADICIONADO: Rota de Histórico de Visitas */}
+                <Route path="visitas" element={<HistoricoVisitas />} />
             </Route>
         </Routes>
     );

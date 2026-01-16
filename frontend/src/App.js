@@ -5,8 +5,11 @@ import { PessoaProvider } from './contexts/PessoaContext';
 // NOVO IMPORT: Provider de Autenticação
 import { AuthProvider } from './contexts/AuthContext';
 
-// ADICIONADO: Provider de Oração
+// Provider de Oração
 import { OraçãoProvider } from './contexts/OraçãoContext';
+
+// ADICIONADO: Provider de Visitas
+import { VisitaProvider } from './contexts/VisitaContext';
 
 import AppRoutes from './routes/AppRoutes';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -20,13 +23,16 @@ function App() {
       <AuthProvider>
         {/* Adicionamos o OraçãoProvider para envolver o resto da aplicação */}
         <OraçãoProvider>
-          <PessoaProvider>
-            <HashRouter>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AppRoutes />
-              </Suspense>
-            </HashRouter>
-          </PessoaProvider>
+          {/* Adicionamos o VisitaProvider */}
+          <VisitaProvider>
+            <PessoaProvider>
+              <HashRouter>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <AppRoutes />
+                </Suspense>
+              </HashRouter>
+            </PessoaProvider>
+          </VisitaProvider>
         </OraçãoProvider>
       </AuthProvider>
     </ErrorBoundary>
