@@ -1,98 +1,124 @@
 <?php
 // backend/api/users.php
-
 require_once 'config.php';
+require_once 'auth_guard.php';
 
-// 1. Verificar Método
- $method = $_SERVER['REQUEST_METHOD'];
- $input = json_decode(file_get_contents('php://input'), true);
+header("Content-Type: application/json; charset=utf-8");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// 2. Verificar Autenticação (Middleware Simples)
- $headers = getallheaders();
- $authHeader = $headers['Authorization'] ?? '';
-
-if (!$authHeader) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Token de autorização não enviado.']);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-// Extrair o token (formato esperado: "Bearer <token>")
- $token = str_replace('Bearer ', '', $authHeader);
+$method = $_SERVER['REQUEST_METHOD'];
+$input = json_decode(file_get_contents('php://input'), true);
+
+// AUTH
+$currentUser = requireAuth($pdo);
+
+// Apenas admin para escrita (POST/PUT/DELETE)
+if ($method !== 'GET') {
+    requireAdmin($currentUser);
+}
 
 try {
-    // Busca usuário pelo token para validar sessão
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE api_token = :token LIMIT 1");
-    $stmt->execute([':token' => $token]);
-    $currentUser = $stmt->fetch();
-
-    if (!$currentUser) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Token inválido ou sessão expirada.']);
-        exit;
-    }
-
-    // 3. Lógica baseada no Método
     switch ($method) {
+
+        /* =========================
+           GET (Listar Todos)
+        ========================== */
         case 'GET':
-            // Listar usuários
-            $stmt = $pdo->query("SELECT id, nome, email, created_at FROM users ORDER BY id DESC");
-            $response = $stmt->fetchAll();
+            $stmt = $pdo->query("SELECT id, nome, email, role, status, created_at FROM users ORDER BY id DESC");
+            $users = $stmt->fetchAll();
+            echo json_encode(['success' => true, 'data' => $users]);
             break;
 
+        /* =========================
+           POST (Criar)
+        ========================== */
         case 'POST':
-            // Criar novo usuário
             $nome = $input['nome'] ?? '';
             $email = $input['email'] ?? '';
             $password = $input['password'] ?? '';
+            $role = $input['role'] ?? 'lider';
 
-            // Validação básica
             if (empty($nome) || empty($email) || empty($password)) {
-                throw new Exception('Nome, email e senha são obrigatórios.');
+                throw new Exception('Dados incompletos.');
             }
 
-            // Verificar se email já existe
-            $checkStmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-            $checkStmt->execute([$email]);
-            if ($checkStmt->fetch()) {
-                throw new Exception('Este email já está cadastrado.');
-            }
+            $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $check->execute([$email]);
+            if ($check->fetch()) throw new Exception('Email já cadastrado.');
 
-            // Hash da senha
-            $senhaHash = password_hash($password, PASSWORD_DEFAULT);
-            
-            // Gerar token para o novo usuário
+            $hash = password_hash($password, PASSWORD_DEFAULT);
             $newToken = bin2hex(random_bytes(32));
 
-            // Inserir
-            $insertStmt = $pdo->prepare("INSERT INTO users (nome, email, password, api_token) VALUES (?, ?, ?, ?)");
-            if ($insertStmt->execute([$nome, $email, $senhaHash, $newToken])) {
-                $id = $pdo->lastInsertId();
-                
-                // Retornar dados do usuário criado (sem senha)
-                $response = [
-                    'success' => true,
-                    'message' => 'Usuário criado com sucesso',
-                    'user' => [
-                        'id' => $id,
-                        'nome' => $nome,
-                        'email' => $email
-                    ]
-                ];
-                http_response_code(201);
+            $sql = "INSERT INTO users (nome, email, password, api_token, role, status) VALUES (?, ?, ?, ?, ?, 'ativo')";
+            $stmt = $pdo->prepare($sql);
+
+            if ($stmt->execute([$nome, $email, $hash, $newToken, $role])) {
+                echo json_encode(['success' => true, 'message' => 'Usuário criado.']);
             } else {
-                throw new Exception('Erro ao salvar usuário.');
+                throw new Exception('Erro ao criar.');
             }
+            break;
+
+        /* =========================
+           PUT (Atualizar Role/Status)
+        ========================== */
+        case 'PUT':
+            $id = $_GET['id'] ?? null;
+            if (!$id) throw new Exception('ID necessário.');
+
+            $fields = [];
+            $params = [];
+
+            if (!empty($input['role'])) {
+                $fields[] = "role = ?";
+                $params[] = $input['role'];
+            }
+            if (!empty($input['status'])) {
+                $fields[] = "status = ?";
+                $params[] = $input['status'];
+            }
+
+            if (empty($fields)) throw new Exception('Nada para atualizar.');
+
+            $params[] = $id;
+            $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+
+            echo json_encode(['success' => true]);
+            break;
+
+        /* =========================
+           DELETE (Excluir) - SÓ ADMIN
+        ========================== */
+        case 'DELETE':
+            $id = $_GET['id'] ?? null;
+            if (!$id) throw new Exception('ID necessário.');
+
+            // Impede auto-exclusão
+            if ($id == $currentUser['id']) {
+                throw new Exception('Você não pode excluir a si mesmo.');
+            }
+
+            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->execute([$id]);
+
+            echo json_encode(['success' => true]);
             break;
 
         default:
             http_response_code(405);
-            $response = ['error' => 'Método não permitido'];
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
     }
 
 } catch (Exception $e) {
     http_response_code(500);
-    $response = ['success' => false, 'error' => $e->getMessage()];
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
-
-echo json_encode($response);

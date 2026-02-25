@@ -1,8 +1,10 @@
 <?php
 // backend/api/visitas_pastorais.php
 
-require_once 'config.php'; // Inclui conexão e CORS
+require_once 'config.php';
+require_once 'auth_guard.php';
 
+header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
@@ -11,23 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Validação de Token
- $headers = getallheaders();
- $authHeader = $headers['Authorization'] ?? '';
- $token = str_replace('Bearer ', '', $authHeader);
+// AUTH
+$currentUser = requireAuth($pdo);
 
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Token não fornecido']);
-    exit;
-}
-
- $data = json_decode(file_get_contents("php://input"), true);
+$data = json_decode(file_get_contents("php://input"), true);
 
 try {
-    // --- GET: Listar Visitas (Ordenadas por Data, mais recente primeiro) ---
+    // --- GET: Listar Visitas ---
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        // ✅ CORREÇÃO: Ajustado para usar ALIAS (AS) para o nomeCompleto funcionar no React
+
         $sql = "SELECT vp.*, p.nome_completo AS nomeCompleto 
                 FROM visitas_pastorais vp 
                 JOIN pessoas p ON vp.pessoa_id = p.id 
@@ -40,6 +34,7 @@ try {
 
     // --- POST: Criar Visita ---
     elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
         if (!isset($data['pessoa_id']) || !isset($data['data_visita']) || !isset($data['motivo'])) {
             throw new Exception("Campos obrigatórios faltando (pessoa_id, data_visita, motivo)");
         }
@@ -50,7 +45,7 @@ try {
         
         $stmt->execute([
             ':pid' => $data['pessoa_id'],
-            ':data' => $data['data_visita'], // Formato YYYY-MM-DD
+            ':data' => $data['data_visita'],
             ':motivo' => $data['motivo'],
             ':obs' => $data['observacoes'] ?? ''
         ]);
@@ -58,9 +53,12 @@ try {
         echo json_encode(['success' => true, 'message' => 'Visita registrada.']);
     }
 
-    // --- DELETE: Excluir Visita ---
+    // --- DELETE: Excluir Visita (SÓ ADMIN) ---
     elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        $id = $_GET['id'];
+
+        requireAdmin($currentUser);
+
+        $id = $_GET['id'] ?? null;
         if (!$id) throw new Exception("ID não informado");
 
         $sql = "DELETE FROM visitas_pastorais WHERE id = :id";
@@ -68,6 +66,11 @@ try {
         $stmt->execute([':id' => $id]);
 
         echo json_encode(['success' => true, 'message' => 'Visita removida.']);
+    }
+
+    else {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'error' => 'Método não permitido']);
     }
 
 } catch (Exception $e) {

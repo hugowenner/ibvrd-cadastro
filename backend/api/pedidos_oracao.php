@@ -2,6 +2,7 @@
 // backend/api/pedidos_oracao.php
 
 require_once 'config.php';
+require_once 'auth_guard.php';
 
 // Headers (igual padrão dos outros endpoints)
 header("Content-Type: application/json; charset=utf-8");
@@ -16,38 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = json_decode(file_get_contents('php://input'), true);
 
-/*
-|--------------------------------------------------------------------------
-| AUTH (mesmo padrão, compatível com Windows)
-|--------------------------------------------------------------------------
-*/
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-
-if (!$authHeader && function_exists('getallheaders')) {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? '';
-}
-
-if (!$authHeader) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Token de autorização não enviado.']);
-    exit;
-}
-
-$token = str_replace('Bearer ', '', $authHeader);
+// AUTH (padronizado)
+$currentUser = requireAuth($pdo);
 
 try {
-    // Valida token
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE api_token = :token LIMIT 1");
-    $stmt->execute([':token' => $token]);
-    $user = $stmt->fetch();
-
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Token inválido ou expirado.']);
-        exit;
-    }
-
     switch ($method) {
 
         /* =========================
@@ -132,9 +105,11 @@ try {
             break;
 
         /* =========================
-           DELETE
+           DELETE (SÓ ADMIN)
         ========================== */
         case 'DELETE':
+
+            requireAdmin($currentUser);
 
             $id = $_GET['id'] ?? null;
 
