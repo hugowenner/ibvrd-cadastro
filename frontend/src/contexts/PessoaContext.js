@@ -48,16 +48,21 @@ export const PessoaProvider = ({ children }) => {
     /* =========================
        NORMALIZAÇÃO FRONT → BACK
     ========================== */
-    const serializePessoa = (pessoa) => ({
+        const serializePessoa = (pessoa) => ({
         nomeCompleto: pessoa.nomeCompleto,
         dataNascimento: pessoa.dataNascimento || null,
         telefone: pessoa.telefone || null,
         email: pessoa.email || null,
         endereco: pessoa.endereco || null,
         tipo: pessoa.tipo || 'Visitante',
-        ministerio: Array.isArray(pessoa.ministerios)
-            ? pessoa.ministerios[0] || null
-            : pessoa.ministerio || null,
+        
+        // CORREÇÃO LÓGICA: Prioriza o string 'ministerio' (do formulário atual)
+        // sobre o array 'ministerios' (do carregamento inicial), para garantir
+        // que a edição de ministério seja salva corretamente.
+        ministerio: pessoa.ministerio 
+            ? pessoa.ministerio 
+            : (Array.isArray(pessoa.ministerios) ? pessoa.ministerios[0] || null : null),
+            
         observacoes: pessoa.observacoes || null
     });
 

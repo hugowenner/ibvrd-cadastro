@@ -55,25 +55,26 @@ const PessoaForm = ({ initialData = null, isEditing = false, onSuccess }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+        const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError(null);
         try {
             if (isEditing) {
-                // Chama a função de atualização do Context
-                // Nota: O ID precisa estar dentro do formData para o backend saber quem atualizar
-                await updatePessoa(formData);
+                // CORREÇÃO: Separar o ID do objeto de dados
+                // O Context espera: updatePessoa(id, dados)
+                if (!formData.id) {
+                    throw new Error('ID da pessoa não encontrado. Não é possível salvar.');
+                }
+                
+                await updatePessoa(formData.id, formData);
             } else {
-                // Fluxo normal de cadastro
                 await addPessoa(formData);
             }
 
-            // Se a página pai passou uma função de sucesso (ex: mostrar mensagem e redirecionar), usa ela.
             if (onSuccess) {
                 onSuccess();
             } else {
-                // Padrão antigo: redireciona direto
                 navigate('/pessoas');
             }
         } catch (err) {
@@ -126,6 +127,7 @@ const PessoaForm = ({ initialData = null, isEditing = false, onSuccess }) => {
                         <option value="Jovens">Jovens</option>
                         <option value="Missões">Missões</option>
                         <option value="Ação Social">Ação Social</option>
+                        <option value="Tecnologia">Tecnologia</option>
                     </select>
                 </div>
                 <div className="col-span-1 md:col-span-2">
