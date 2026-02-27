@@ -3,6 +3,7 @@ import { PessoaContext } from '../../contexts/PessoaContext';
 import Table from '../../components/Table';
 import Card from '../../components/Card';
 import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 
 const Pessoas = () => {
     const { pessoas, loading, error, deletePessoa } = useContext(PessoaContext);
@@ -12,6 +13,7 @@ const Pessoas = () => {
         key: 'nomeCompleto',
         direction: 'ascending'
     });
+
     const navigate = useNavigate();
 
     const columns = [
@@ -90,11 +92,22 @@ const Pessoas = () => {
     };
 
     const filteredPessoas = useMemo(() => {
+        const term = searchTerm.trim().toLowerCase();
+
         let filtered = pessoas.filter(pessoa => {
+            const nome = (pessoa.nomeCompleto || '').toLowerCase();
+            const email = (pessoa.email || '').toLowerCase();
+            const telefone = (pessoa.telefone || '').toLowerCase();
+
             const matchesSearch =
-                pessoa.nomeCompleto?.toLowerCase().includes(searchTerm.toLowerCase());
+                term === '' ||
+                nome.includes(term) ||
+                email.includes(term) ||
+                telefone.includes(term);
+
             const matchesFilter =
                 filterType === 'Todos' || pessoa.tipo === filterType;
+
             return matchesSearch && matchesFilter;
         });
 
@@ -126,8 +139,73 @@ const Pessoas = () => {
     }
 
     return (
-        <div>
-            <h2 className="text-3xl mb-4">Pessoas Cadastradas</h2>
+        <div className="animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
+                <h2 className="text-3xl">Pessoas Cadastradas</h2>
+            </div>
+
+            {/* BARRA DE FILTROS */}
+            <Card className="mb-6 p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                    {/* Busca */}
+                    <div className="md:col-span-7">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                            Buscar
+                        </label>
+                        <div className="relative">
+                            <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Nome, email ou telefone..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all text-sm bg-gray-50 focus:bg-white"
+                            />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                                    aria-label="Limpar busca"
+                                >
+                                    <FaTimes />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Filtro Tipo */}
+                    <div className="md:col-span-3">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                            Tipo
+                        </label>
+                        <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 text-sm appearance-none cursor-pointer"
+                        >
+                            <option value="Todos">Todos</option>
+                            <option value="Visitante">Visitante</option>
+                            <option value="Membro">Membro</option>
+                            <option value="Líder">Líder</option>
+                        </select>
+                    </div>
+
+                    {/* Limpar tudo */}
+                    <div className="md:col-span-2 flex md:justify-end">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterType('Todos');
+                            }}
+                            className="w-full md:w-auto px-5 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors text-sm"
+                        >
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+            </Card>
 
             <Table
                 data={filteredPessoas}

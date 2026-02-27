@@ -1,6 +1,6 @@
 import auth from './auth';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 const withAuth = () => {
   const token = auth.getToken();
@@ -25,9 +25,25 @@ const listUsers = async () => {
     method: 'GET',
     headers: withAuth(),
   });
+
   const data = await res.json();
-  if (!res.ok || !data.success) throw new Error(data.error || 'Erro ao listar usuários');
-  return (data.data || []).map(normalizeUser);
+
+  // Se deu erro HTTP, tenta mostrar a mensagem do backend
+  if (!res.ok) {
+    throw new Error(data?.error || 'Erro ao listar usuários');
+  }
+
+  // ✅ Aceita os 2 formatos:
+  // 1) { success: true, data: [...] }
+  // 2) [...] (array puro)
+  const list = Array.isArray(data) ? data : (data?.data || []);
+
+  // Se vier {success:false,...} também cai aqui
+  if (!Array.isArray(list)) {
+    throw new Error(data?.error || 'Formato inválido ao listar usuários');
+  }
+
+  return list.map(normalizeUser);
 };
 
 // Só ADMIN apaga (backend já bloqueia também)
@@ -37,7 +53,7 @@ const deleteUser = async (id) => {
     headers: withAuth(),
   });
   const data = await res.json();
-  if (!res.ok || !data.success) throw new Error(data.error || 'Erro ao excluir usuário');
+  if (!res.ok || data?.success === false) throw new Error(data?.error || 'Erro ao excluir usuário');
   return data;
 };
 
@@ -49,17 +65,15 @@ const updateUser = async (id, payload) => {
     body: JSON.stringify(payload),
   });
   const data = await res.json();
-  if (!res.ok || !data.success) throw new Error(data.error || 'Erro ao atualizar usuário');
+  if (!res.ok || data?.success === false) throw new Error(data?.error || 'Erro ao atualizar usuário');
   return data;
 };
 
-// Se ainda não existe no backend, deixa “stub” pra não quebrar a tela
 const toggleUserStatus = async (id, currentStatus) => {
   const next = currentStatus === 'ativo' ? 'inativo' : 'ativo';
   return updateUser(id, { status: next });
 };
 
-// Você não tem endpoint de reset ainda (não invento). Mantém stub.
 const resetUserPassword = async () => {
   throw new Error('Reset de senha ainda não implementado no backend.');
 };

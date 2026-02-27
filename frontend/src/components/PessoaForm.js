@@ -1,8 +1,7 @@
 // src/components/PessoaForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
-// CORREÇÃO: Caminho ajustado para apontar para src/contexts
 import { PessoaContext } from '../contexts/PessoaContext'; 
 
 const FormInput = ({ label, id, name, value, onChange, type = 'text', required = false, ...props }) => (
@@ -21,21 +20,35 @@ const FormInput = ({ label, id, name, value, onChange, type = 'text', required =
     </div>
 );
 
-const PessoaForm = () => {
-    const { addPessoa } = useContext(PessoaContext);
+// Adicionei as props: initialData, isEditing e onSuccess
+const PessoaForm = ({ initialData = null, isEditing = false, onSuccess }) => {
+    // Adicionei updatePessoa aqui. Certifique-se que seu PessoaContext tem essa função!
+    const { addPessoa, updatePessoa } = useContext(PessoaContext);
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        nomeCompleto: '',
-        dataNascimento: '',
-        telefone: '',
-        email: '',
-        endereco: '',
-        tipo: 'Visitante',
-        ministerio: 'Nenhum',
-        observacoes: '',
-    });
+    
+    // Estado inicial condicional: Se veio dados pra editar, usa eles. Senão, usa vazio.
+    const [formData, setFormData] = useState(
+        initialData || {
+            nomeCompleto: '',
+            dataNascimento: '',
+            telefone: '',
+            email: '',
+            endereco: '',
+            tipo: 'Visitante',
+            ministerio: 'Nenhum',
+            observacoes: '',
+        }
+    );
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+
+    // Efeito para atualizar o formulário se os dados iniciais carregarem depois (caso de async)
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+        }
+    }, [initialData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,10 +60,24 @@ const PessoaForm = () => {
         setIsSubmitting(true);
         setError(null);
         try {
-            await addPessoa(formData);
-            navigate('/pessoas');
+            if (isEditing) {
+                // Chama a função de atualização do Context
+                // Nota: O ID precisa estar dentro do formData para o backend saber quem atualizar
+                await updatePessoa(formData);
+            } else {
+                // Fluxo normal de cadastro
+                await addPessoa(formData);
+            }
+
+            // Se a página pai passou uma função de sucesso (ex: mostrar mensagem e redirecionar), usa ela.
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                // Padrão antigo: redireciona direto
+                navigate('/pessoas');
+            }
         } catch (err) {
-            setError(err.message || 'Ocorreu um erro ao cadastrar a pessoa. Tente novamente.');
+            setError(err.message || 'Ocorreu um erro ao salvar os dados. Tente novamente.');
         } finally {
             setIsSubmitting(false);
         }
@@ -108,7 +135,7 @@ const PessoaForm = () => {
             </div>
             <div className="pt-6 md:pt-8">
                 <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold uppercase tracking-widest text-xs py-3 md:py-4 px-6 md:px-8 rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed transform hover:-translate-y-1 active:translate-y-0 flex justify-center items-center gap-2 min-h-[48px]">
-                    {isSubmitting ? (<> <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processando...</> ) : 'Cadastrar Pessoa'}
+                    {isSubmitting ? (<> <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processando...</> ) : (isEditing ? 'Salvar Alterações' : 'Cadastrar Pessoa')}
                 </button>
             </div>
         </form>

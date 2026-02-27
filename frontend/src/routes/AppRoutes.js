@@ -6,6 +6,8 @@ import AppLayout from '../AppLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import Pessoas from '../pages/Pessoas/Pessoas';
 import CadastroPessoa from '../pages/CadastroPessoa/CadastroPessoa';
+// NOVA IMPORTAÇÃO ABAIXO:
+import EditarPessoa from '../pages/EditarPessoa/EditarPessoa'; 
 import Aniversariantes from '../pages/Aniversariantes/Aniversariantes';
 import CadastroUsuario from '../pages/CadastroUsuario/CadastroUsuario';
 import PedidosOração from '../pages/PedidosOração/PedidosOração';
@@ -35,7 +37,13 @@ const AppRoutes = () => {
 
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="pessoas" element={<Pessoas />} />
+        
+        {/* Rota de Cadastro */}
         <Route path="cadastro" element={<CadastroPessoa />} />
+        
+        {/* NOVA ROTA DE EDIÇÃO AQUI: */}
+        <Route path="editar/:id" element={<EditarPessoa />} />
+
         <Route path="aniversariantes" element={<Aniversariantes />} />
 
         {/* Gerenciamento de Usuários */}
