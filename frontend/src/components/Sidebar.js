@@ -78,15 +78,16 @@ const Sidebar = () => {
           </p>
         </div>
 
-        <nav className="flex-1 mt-4 md:mt-6 space-y-1 overflow-y-auto">
+                <nav className="flex-1 mt-4 md:mt-6 space-y-1 overflow-y-auto">
           <NavLink to="/dashboard" className={linkClasses} onClick={() => setIsOpen(false)}>
             <FaHome className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
             <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Dashboard</span>
           </NavLink>
 
-          <NavLink to="/pessoas" className={linkClasses} onClick={() => setIsOpen(false)}>
-            <FaUsers className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
-            <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Pessoas Cadastradas</span>
+          {/* MOVIDO: Novo Cadastro agora é o 2º item */}
+          <NavLink to="/cadastro" className={linkClasses} onClick={() => setIsOpen(false)}>
+            <FaUserPlus className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
+            <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Cadastro</span>
           </NavLink>
 
           <NavLink to="/aniversariantes" className={linkClasses} onClick={() => setIsOpen(false)}>
@@ -94,24 +95,23 @@ const Sidebar = () => {
             <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Aniversariantes</span>
           </NavLink>
 
-          <NavLink to="/cadastro" className={linkClasses} onClick={() => setIsOpen(false)}>
-            <FaUserPlus className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
-            <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Novo Cadastro</span>
+          {/* MOVIDO: Pessoas Cadastradas agora é o 4º item */}
+          <NavLink to="/pessoas" className={linkClasses} onClick={() => setIsOpen(false)}>
+            <FaUsers className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
+            <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Pessoas Cadastradas</span>
           </NavLink>
 
-          {/* Link para Mural de Oração */}
           <NavLink to="/pedidos-oracao" className={linkClasses} onClick={() => setIsOpen(false)}>
             <FaPrayingHands className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
             <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Mural de Oração</span>
           </NavLink>
 
-          {/* Link para Histórico de Visitas */}
           <NavLink to="/visitas" className={linkClasses} onClick={() => setIsOpen(false)}>
             <FaCalendarAlt className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
             <span className="ml-4 font-serif text-sm md:text-sm tracking-wide">Histórico de Visitas</span>
           </NavLink>
 
-          {/* NOVO: Gerenciar Usuários (Só Admin) */}
+          {/* Itens de Admin (Mantidos inalterados no final) */}
           {user?.role === 'admin' && (
             <NavLink to="/usuarios" className={linkClasses} onClick={() => setIsOpen(false)}>
               <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
@@ -119,7 +119,6 @@ const Sidebar = () => {
             </NavLink>
           )}
 
-          {/* Link para Novo Usuário (Só Admin) */}
           {user?.role === 'admin' && (
             <NavLink to="/cadastro-usuario" className={linkClasses} onClick={() => setIsOpen(false)}>
               <FaUserShield className="text-lg md:text-lg transition-transform duration-300 group-hover:scale-110 text-amber-500" />
